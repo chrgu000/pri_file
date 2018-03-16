@@ -1,0 +1,104 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False"  ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
+using <%=nameSpace %>.MODEL;
+
+
+
+namespace IntelligencizeWcfService
+{
+[ServiceContract]
+ public interface I<%= getT_Table(SourceTable.Name) %>Server
+    {
+	[OperationContract]
+       int Add(string modeJson);
+	[OperationContract]
+       int Del(string modeJson);
+	[OperationContract]
+       int Update(string modeJson);
+	[OperationContract]
+      string GetMode(<% foreach (ColumnSchema col in SourceTable.Columns ){if(col.IsPrimaryKeyMember){%><%= GetCSType(col) %>  <%= col.Name %> <%}} %> );
+[OperationContract]
+       string GetStr(string modeJson);
+ 
+      /// <summary>
+      /// 分页存储过程
+      /// </summary>
+      /// <param name="sqlstr">查询字符串</param>
+      /// <param name="size">显示的行数</param>
+      /// <param name="index">第几页</param>
+      /// <returns>object是list对象，count是总页数</returns>
+	[OperationContract]
+     string GetList (string where, string startDate, int size, int index);
+    }
+}
+
+
+
+
+
+<script runat="template">
+// My methods here.
+public string getT_Table(string str)
+{
+	str=str.Substring(2);
+	str=str.Substring(0,1).ToUpper()+str.Substring(1);
+	str=str.Replace("_","");
+	return str;
+}
+public string GetCSType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "string";
+		case DbType.AnsiStringFixedLength: return "string";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "bool";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "decimal";
+		case DbType.Date: return "DateTime";
+		case DbType.DateTime: return "DateTime";
+		case DbType.Decimal: return "decimal";
+		case DbType.Double: return "double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "int";
+		case DbType.Int64: return "long";
+		case DbType.Object: return "object";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "float";
+		case DbType.String: return "string";
+		case DbType.StringFixedLength: return "string";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "decimal";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+</script>

@@ -1,0 +1,183 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="NameSpace" Type="System.String" Category="Strings" Description="nameSpace" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace <%= NameSpace %>.MODEL
+{
+    /// <summary>
+    /// 备注:<%= SourceTable.Description %>
+    /// </summary>
+    [Serializable]
+    public class <%=getT_Table( SourceTable.Name) %>
+    {
+        public <%=getT_Table( SourceTable.Name) %>()
+        { }
+        #region 字段
+		<% foreach (ColumnSchema column in SourceTable.Columns) { %>
+		private <%= GetCSType(column) %> _<%=Camel( column.Name) %>;//<%= column.Description %>
+		<% } %>
+		<%	foreach (TableKeySchema  key in SourceTable.ForeignKeys){	%>
+		private  <%= getT_Table(key.PrimaryKeyTable.Name) %> _<%= Camel( getT_Table(key.PrimaryKeyTable.Name)) %>;
+		<%}%>
+			//list FK
+  <%
+string[] tables=new string[SourceTable.PrimaryKeys.Count];
+	for(int fki=0;fki<tables.Length;fki++)
+		{
+			tables[fki]="";
+		}
+string[] jiluTable=new string[SourceTable.PrimaryKeys.Count];
+int i=0;
+bool bl=false;
+foreach(TableKeySchema pk in SourceTable.PrimaryKeys)
+    {    
+		for(int fki=0;fki<tables.Length;fki++)
+		{
+			if(tables[fki]==pk.ForeignKeyTable.Name)
+			{   
+				bl=true;
+			}
+		}
+		if(bl)
+		{
+		jiluTable[i]=pk.ForeignKeyTable.Name;
+		bl=false;
+		}
+		tables[i]=pk.ForeignKeyTable.Name;
+		i++;
+	}
+	i=0;
+foreach(TableKeySchema pk in SourceTable.PrimaryKeys)
+	{
+		for(int fki=0;fki<jiluTable.Length;fki++)
+		{
+			if(jiluTable[fki]==pk.ForeignKeyTable .Name)
+			{
+				i++;
+				bl=true;
+			}
+		}
+		if(bl){%>
+   		 private List<<%=getT_Table( pk.ForeignKeyTable .Name) %>> _<%=Camel( getT_Table( pk.ForeignKeyTable.Name))+i%>s;
+   <%bl=false; }else{%>
+		 private List<<%=getT_Table( pk.ForeignKeyTable .Name) %>> _<%=Camel( getT_Table( pk.ForeignKeyTable .Name)) %>s;
+ <%}%>
+    <% }%>
+		#endregion Model
+		
+		#region 属性
+		<% foreach (ColumnSchema column in SourceTable.Columns) { %>
+		
+		/// <summary>
+        /// <%= column.Description %>
+        /// </summary>
+		public <%= GetCSType(column) %> <%= column.Name %>
+		{
+			get { return _<%= Camel(column.Name) %>; }
+            set { _<%= Camel(column.Name) %> = value; }
+		}
+		<% } %>
+		
+		<%	foreach (TableKeySchema  key in SourceTable.ForeignKeys){	%>
+		
+		public <%= getT_Table( key.PrimaryKeyTable.Name) %> <%=getT_Table( key.PrimaryKeyTable.Name) %>{
+		get{return _<%= Camel( getT_Table(key.PrimaryKeyTable.Name)) %>;}
+		set{_<%= Camel(getT_Table(key.PrimaryKeyTable.Name)) %>=value;}
+		}
+		<%}%>
+				//list FK
+  <%
+int ii=0;
+foreach(TableKeySchema pk in SourceTable.PrimaryKeys){	
+	for(int fki=0;fki<jiluTable.Length;fki++)
+		{
+			if(jiluTable[fki]==pk.ForeignKeyTable .Name)
+			{
+				ii++;
+				bl=true;
+			}
+		}
+		
+		if(bl){
+			%>	public List< <%= getT_Table( pk.ForeignKeyTable.Name)  %>>  <%= getT_Table( pk.ForeignKeyTable.Name)+ii  %>s
+		{
+		get{return _<%=  Camel(getT_Table(pk.ForeignKeyTable.Name ))+ii %>s;}
+		set { _<%=  Camel(getT_Table(pk.ForeignKeyTable.Name ))+ii %>s =value; }
+		}
+			<%
+			bl=false;}
+			else{
+	%>
+   		public List< <%= getT_Table( pk.ForeignKeyTable.Name)  %>>  <%= getT_Table( pk.ForeignKeyTable.Name)  %>s
+		{
+		get{return _<%=  Camel(getT_Table(pk.ForeignKeyTable.Name )) %>s;}	
+		set{  _<%=  Camel(getT_Table(pk.ForeignKeyTable.Name )) %>s =value;}
+		}
+    <%}}%>
+        #endregion Model
+
+    }
+}
+
+<script runat="template">
+// My methods here.
+
+public string Camel(string str)
+{
+
+	str=str.Substring(0,1).ToLower()+str.Substring(1);
+	
+	return str;
+}
+public string getT_Table(string str)
+{
+str=str.Substring(2);
+	str=str.Replace("_","");
+	return str;
+}
+
+public static string GetCSType(ColumnSchema column)
+		{
+			if (column.Name.EndsWith("TypeCode")) return column.Name;
+			
+			switch (column.DataType)
+			{
+				case DbType.AnsiString: return "string";
+				case DbType.AnsiStringFixedLength: return "string";
+				case DbType.Binary: return "byte[]";
+				case DbType.Boolean: return "bool";
+				case DbType.Byte: return "byte";
+				case DbType.Currency: return "double";
+				case DbType.Date: return "string";
+				case DbType.DateTime: return "string";
+				case DbType.Decimal: return "decimal";
+				case DbType.Double: return "double";
+				case DbType.Guid: return "Guid";
+				case DbType.Int16: return "short";
+				case DbType.Int32: return "int";
+				case DbType.Int64: return "long";
+				case DbType.Object: return "string";
+				case DbType.SByte: return "sbyte";
+				case DbType.Single: return "float";
+				case DbType.String: return "string";
+				case DbType.StringFixedLength: return "string";
+				case DbType.Time: return "TimeSpan";
+				case DbType.UInt16: return "ushort";
+				case DbType.UInt32: return "uint";
+				case DbType.UInt64: return "ulong";
+				case DbType.VarNumeric: return "double";
+				default:
+				{
+					return "__UNKNOWN__" + column.NativeType;
+				}
+			}
+		}
+</script>

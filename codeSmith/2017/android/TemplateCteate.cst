@@ -1,0 +1,101 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Debug="True" ResponseEncoding="UTF-8" %>
+<%@ Property Name="SampleStringProperty" Default="SomeValue" Type="System.String" %>
+<%@ Property Name="SampleBooleanProperty" Default="True" Type="System.Boolean" %>
+<%@ Property Name="ActivityName" Type="System.String" Category="Strings" Description="实体名称" Default="HelpPolicy"
+%>
+<%@ Property Name="createXmlName" Type="System.String" Category="Strings" Description="item名称" Default="help_policy"
+%>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" Default="111"
+%>
+<%@ Property Name="imgName" Type="System.String" Category="Strings" Description="图片列" Default="111"
+%>
+<%@ Property Name="isCoerceOutImg" Type="System.Boolean" Category="Strings" Description="强制输出图片列" %>
+<%@ Property Name="itemName" Type="System.String" Category="Strings" Description="item名称" Default="help_policy"
+%>
+
+<%@ Property Name="mainXmlName" Type="System.String" Category="Strings" Description="主页面名称" Default="help_policy"
+%>
+<%@ Property Name="bussiPackage" Type="System.String" Category="Strings" Description="com头" Default="com.jeecg" %>
+<%@ Property Name="entityPackage" Type="System.String" Category="Strings" Description="package后" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+
+<%@ Register Name="adapter_template" Template="adapter_template.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="add_act_template" Template="add_act1_template.cst" MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="add_xml_template" Template="add_xml_template.cst" MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="item_xml_template" Template="item_xml_template.cst" MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="main_act_template" Template="main_act_template.cst" MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="main_xml_template" Template="main1_xml_template.cst" MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="detail_act_template" Template="detail_act_template.cst" MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="detail_xml_template" Template="detail_xml_template.cst" MergeProperties="False" ExcludeProperties="" %>
+
+<%@ Register Name="Model_template" Template="Model_template.cst" MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="web_action_template" Template="web_action_template.cst" MergeProperties="False" ExcludeProperties="" %>
+
+
+<script runat="template">
+
+     
+        
+        public void Generate()
+        { 
+            CodeTemplate st=new adapter_template();
+            CreateTemplate(st,ActivityName+"Adapter.java");
+  st=new add_act_template();
+                CreateTemplate(st,ActivityName+"AddAct.java");
+  st=new add_xml_template();
+                CreateTemplate(st,"act_"+itemName+"_add.xml");
+  st=new item_xml_template();
+                CreateTemplate(st,"item_list_"+itemName+".xml");
+  st=new main_act_template();
+                CreateTemplate(st,ActivityName+"Act.java");
+  st=new main_xml_template();
+                CreateTemplate(st,"act_"+mainXmlName+".xml");
+            
+  st=new detail_act_template();
+                CreateTemplate(st,ActivityName+"DetailAct.java");
+  st=new detail_xml_template();
+                CreateTemplate(st,"act_"+mainXmlName+"_detail.xml");          
+            
+            
+  st=new Model_template();
+                CreateTemplate(st,ActivityName+"Info.java");
+   st=new web_action_template();
+                CreateTemplate(st,"Api"+del_HeadUpper(SourceTable.Name)+"Controller.java");
+            
+        } 
+        public void CreateTemplate(CodeTemplate temp,string fileName)
+        {
+                       CodeTemplate st =temp;
+            string outputFile = "";
+        	st.SetProperty("SourceTable",SourceTable);
+        	st.SetProperty("itemName",itemName);
+            st.SetProperty("ActivityName",ActivityName);
+        	st.SetProperty("createXmlName",createXmlName);
+            st.SetProperty("mainXmlName",mainXmlName);
+            st.SetProperty("imgName",imgName);
+        	st.SetProperty("filePath",filePath);
+        	st.SetProperty("isCoerceOutImg",isCoerceOutImg);
+        	st.SetProperty("bussiPackage",bussiPackage);
+            st.SetProperty("entityPackage",entityPackage);
+            
+            outputFile = string.Format("D:\\CodeCreate\\{0}\\{1}",ActivityName,fileName);
+            
+            st.RenderToFile(outputFile,true);
+        }
+
+// My methods here.
+public string SampleMethod()
+{
+  return "Method output.";
+}
+</script>
+<!-- #include file="ScriptTemplate.cst" -->
+ <%
+//System.Diagnostics.Debugger.Launch();  
+this.Generate();  %>  
+ <%=ActivityName %>

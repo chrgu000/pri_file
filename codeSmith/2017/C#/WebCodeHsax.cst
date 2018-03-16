@@ -1,0 +1,112 @@
+﻿<%-- 
+Name:  网页ashx处理页面，接收处理数据
+Author: 张相伟
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+<%@ Register Name="ZhangXiangWei" Template="F:\一些有用的方法\codeSmithTemplate\2014\C#\ScriptTemplate.cst" MergeProperties="False" ExcludeProperties="" %>
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using Hidistro.Entities.Comments;
+using Hidistro.Membership.Context;
+using System.Data;
+
+
+namespace <%=nameSpace%>
+{
+    /// <summary>
+    ///AddVideoHandler 的摘要说明
+    /// </summary>
+    public class VideoHandler : IHttpHandler
+    {
+        public void ProcessRequest(HttpContext context)
+        {   
+         if (context.Request.RequestType == "POST")
+            {
+                String action=context.Request["action"];
+                if (action.Equals("add"))
+                {
+        	<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				string <%= Camel(column.Name) %> = context.Request.Params["<%= Camel(column.Name) %>"];
+				<% } %>
+        
+        <%= GetUpper(SourceTable.Name)%>Info info = new <%= GetUpper(SourceTable.Name)%>Info();
+        
+        <% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+                info.<%= GetUpper(column.Name) %>=<%= convertColumnType(column) %>;
+				<% } %>
+            info.<% foreach (ColumnSchema col in SourceTable.Columns ){if(col.IsPrimaryKeyMember){%><%= GetUpper(col.Name) %> <% break;}} %>=Guid.NewGuid().ToString();
+                    DAL dal = new DAL();
+                    bool ret = dal.Add<%= GetUpper(SourceTable.Name)%>(info);
+                    if (ret)
+                        context.Response.Write("{error:0,msg:\"提交成功！\"}");
+                    else
+                        context.Response.Write("{error:1,msg:\"已经提交过，等待审核！\"}");
+                    }
+                    else if(action.Equals("search"))
+                    {
+                        String pageIndex=context.Request["pageIndex"];
+                      String pageSize=context.Request["pageSize"];    
+                      String   x =context.Request[""];
+                     <%= GetUpper(SourceTable.Name)%>DAL dal = new <%= GetUpper(SourceTable.Name)%>DAL();
+                     int totalCount = -1;
+                     DataSet ds = dal.Query<%= GetUpper(SourceTable.Name)%>(int.Parse(pageIndex), int.Parse(pageSize), x, out totalCount);
+                     if (totalCount != -1)
+                     {
+
+                         String data = "''";
+                         if(ds!=null)
+                         {
+                             data = JsonHelperBack.DataTableToJSON(ds.Tables[0]);
+                         }
+                         context.Response.Write("{error:0,totalCount:" + totalCount + ",data:" + data + "   }");
+                     }
+                     else
+                         context.Response.Write("{error:1,msg:\"网络异常！\"}");
+                    }
+           }
+        }
+        
+    }
+}
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,53 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="请选择你要生成的表，可以多选！" %>
+<%@ Property Name="NameSpace" Type="System.String" Category="Context" Description="请输入你的命名空间，如MySystem，该名称将和后缀构成不同的层的命名空间" %>
+<%@ Property Name="isCreateDAL" Type="System.Boolean" Default="True" Optional="False" Category="输出选项" Description="是否生成DAL层项目？默认为生成" %>
+<%@ Property Name="dalPath" Type="System.String" Default=".DAL" Optional="True" Category="输出选项" Description="请选择你DAL层项目的后缀标识名，默认为解决方案名＋“.DAL”" %>
+
+<%@ Register Name="ZhangXiangWei" Template="E:\kuaiPan2\codeSmithTemplate\2014\C#\BLL.cst" MergeProperties="False" ExcludeProperties="" %>
+
+<%
+/*
+Dal
+*/
+%>
+<% foreach( TableSchema table in this.SourceTables){ 
+
+    CodeTemplate st = null;
+    string outputFile = "";
+    
+	st =new ZhangXiangWei();
+	st.SetProperty("SourceTable",table);
+	st.SetProperty("nameSpace",NameSpace);
+	//st.RenderToFile("\\"+table+"BLL.cs",true);
+	
+	
+    outputFile = string.Format("E:\\CodeCreate\\{0}BLL.cs", getT_Table(table.Name));
+    
+    st.RenderToFile(outputFile,true);
+    }
+	Response.WriteLine("逻辑层生成完毕!");
+	%>
+
+<script runat="template">
+// My methods here.
+
+public string getT_Table(string str)
+{
+	str=str.Substring(2);
+	str=str.Substring(0,1).ToUpper()+str.Substring(1);
+	str=str.Replace("_","");
+	return str;
+}
+</script>

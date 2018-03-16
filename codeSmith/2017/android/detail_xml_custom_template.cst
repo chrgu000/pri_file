@@ -1,0 +1,101 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="ActivityName" Type="System.String" Category="Strings" Description="实体名称" %>
+<%@ Property Name="itemName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="createXmlName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="mainXmlName" Type="System.String" Category="Strings" Description="主页面名称" %>
+<%@ Property Name="imgName" Type="System.String" Category="Strings" Description="图片列" %>
+<%@ Property Name="isCoerceOutImg" Type="System.Boolean" Category="Strings" Description="强制输出图片列" %>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+      android:background="#ffffff"
+    android:orientation="vertical" >
+          <com.hxyc.widget.TitleBar
+        android:id="@+id/act_<%=itemName %>_detail_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+        
+       <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember){continue;} 
+        if(column.Name==imgName)
+        {%>
+        <LinearLayout
+                 android:layout_marginLeft="5dp"
+         android:layout_marginRight="5dp"
+             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+        >
+              <ImageView 
+            android:id="@+id/act_<%=itemName %>_detail_<%=Camel(column.Name) %>_img"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+         </LinearLayout>
+        <%}else{ %>
+         <LinearLayout
+                 android:layout_marginLeft="5dp"
+         android:layout_marginRight="5dp"
+             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+        >
+       <TextView 
+              android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="3dp"
+                android:paddingLeft="3dp"
+            android:gravity="center_vertical"
+            android:layout_weight="3"
+            android:layout_width="0dp"
+            android:minHeight="30dp"
+            android:background="@drawable/shape_help_layout_left_not_bottom_border_gray_bg"
+            android:layout_height="wrap_content"
+            android:text="<%=column.Description %>"
+            />
+        <TextView 
+              android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="3dp"
+                android:paddingLeft="3dp"
+            android:id="@+id/act_<%=itemName %>_detail_<%=Camel(column.Name) %>_tv"
+            android:gravity="center_vertical"
+			android:layout_weight="7"            
+            android:layout_width="0dp"
+             android:minHeight="30dp"
+                android:background="@drawable/shape_help_layout_right_not_bottom_border"
+            android:layout_height="match_parent"
+            android:text=""
+            />
+            </LinearLayout>
+    <%}}%>
+     <%if(isCoerceOutImg){%>
+         <LinearLayout
+                 android:layout_marginLeft="5dp"
+         android:layout_marginRight="5dp"
+             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+        >
+          <ImageView 
+            android:id="@+id/act_<%=itemName %>_detail_<%=Camel(imgName) %>_img"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+             </LinearLayout>
+         <%}%>
+</LinearLayout>
+    
+ 
+      
+     
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

@@ -1,0 +1,111 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="NameSpace" Type="System.String" Category="Strings" Description="nameSpace" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="ViewScheme" Type="SchemaExplorer.ViewSchema" Category="Context" Description="ViewScheme" %>
+
+package com.zn.interact.models;
+
+import java.io.Serializable;
+import com.zn.myinterface.AbstractStartDateEntity;
+
+    public class <%= ToUpper (getT_View( ViewScheme.Name) ) %> extends AbstractStartDateEntity implements Serializable 
+    {
+	    public static final String s_GUID="<%= System.Guid.NewGuid()%>";
+        public <%=ToUpper( getT_View( ViewScheme.Name) ) %>()
+        { }
+        
+		<% foreach (ViewColumnSchema column in ViewScheme.Columns) { %>
+		private <%= GetCSType(column) %> _<%=Camel( column.Name) %>;
+		<% } %>
+
+		
+        
+        	<% foreach (ViewColumnSchema column in ViewScheme.Columns) { %>
+        
+       public <%= GetCSType(column) %>  get<%= Camel( column.Name)  %>()
+		{
+		return _<%= Camel( column.Name)  %>;
+		}
+		
+		public void  set<%=Camel( column.Name) %>(<%= GetCSType(column) %>  <%=Camel( column.Name)  %>)
+		{
+		 _<%=  Camel( column.Name)  %> =<%= Camel( column.Name)  %>;
+		
+		}
+        
+		<% } %>
+
+    	@Override
+		public String AcquireStartDate() {
+			// TODO Auto-generated method stub
+			return _
+		}
+    
+}
+
+<script runat="template">
+// My methods here.
+
+public string Camel(string str)
+{
+
+	str=str.Substring(0,1).ToLower()+str.Substring(1);
+	
+	return str;
+}
+public string ToUpper(string str)
+{
+
+	str=str.Substring(0,1).ToUpper()+str.Substring(1);
+	
+	return str;
+}
+public string getT_View(string str)
+{
+	str=str.Replace("_","");
+	int index=str.LastIndexOf("view");
+	if(index!=-1)
+    str=str.Substring(0,index)+"View";
+	return str;
+}
+
+public static string GetCSType(ViewColumnSchema column)
+		{
+			if (column.Name.EndsWith("TypeCode")) return column.Name;
+			
+			switch (column.DataType)
+			{
+				case DbType.AnsiString: return "String";
+				case DbType.AnsiStringFixedLength: return "String";
+				case DbType.Binary: return "byte[]";
+				case DbType.Boolean: return "bool";
+				case DbType.Byte: return "byte";
+				case DbType.Currency: return "double";
+				case DbType.Date: return "String";
+				case DbType.DateTime: return "String";
+				case DbType.Decimal: return "double";
+				case DbType.Double: return "double";
+				case DbType.Guid: return "Guid";
+				case DbType.Int16: return "short";
+				case DbType.Int32: return "int";
+				case DbType.Int64: return "long";
+				case DbType.Object: return "String";
+				case DbType.SByte: return "sbyte";
+				case DbType.Single: return "float";
+				case DbType.String: return "String";
+				case DbType.StringFixedLength: return "String";
+				case DbType.Time: return "TimeSpan";
+				case DbType.UInt16: return "ushort";
+				case DbType.UInt32: return "uint";
+				case DbType.UInt64: return "ulong";
+				case DbType.VarNumeric: return "double";
+				default:
+				{
+					return "__UNKNOWN__" + column.NativeType;
+				}
+			}
+		}
+</script>

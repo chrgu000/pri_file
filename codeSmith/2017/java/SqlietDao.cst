@@ -1,0 +1,389 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="NSPostfix" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpacePostfix" %>
+
+package com.example.spark_2.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.spark_2.SApp;
+import com.example.spark_2.impl.<%=SourceTable.Name%>Impl;
+import com.example.spark_2.model.<%=SourceTable.Name%>;
+import com.example.spark_2.sqliet.DBOpenHelper;
+import com.example.spark_2.tool.XmppTool;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+    public class <%=SourceTable.Name%>Dao implements <%=SourceTable.Name%>Impl
+    {
+	final String  TABLE_NAME="<%=SourceTable.Name%>";
+ <% foreach (ColumnSchema column in SourceTable.Columns) { %>
+	
+		final String  <%= column.Name.ToUpper() %>="<%= column.Name %>";
+		<% } %>
+    
+       DBOpenHelper dbOpenHelper;
+    public <%=SourceTable.Name%>Dao()
+    {
+   	  dbOpenHelper = new DBOpenHelper(SApp.getInstance(), XmppTool.sqlietDB, null, XmppTool.sqlietDBVersion);  
+    }
+	@Override
+	public void CreateTable() {
+	 SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+				String sql = "CREATE TABLE " + TABLE_NAME + " (" 
+				<% foreach (ColumnSchema col in SourceTable.Columns ){
+					if(col.IsPrimaryKeyMember){%>+<%= col.Name.ToUpper() %>+" text PRIMARY KEY  not null," <%}}%>
+				<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				+ <%= column.Name.ToUpper() %> + " <%= GetSqlietType(column) %>  " + ", "
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				+ <%= column.Name.ToUpper() %> + " <%= GetSqlietType(column) %>  " 
+				<% } %>
+				+ ");";
+				Log.i("haiyang:createDB=", sql);
+			
+				try {
+			
+				// db.execSQL("DROP TABLE IF EXISTS "+TABLE_NAME+" ");
+				if(!dbOpenHelper.isTabbleExist(TABLE_NAME))
+				db.execSQL(sql);
+			
+				// setTitle(" 数据表成功重建");
+			
+				} catch (SQLException e) {
+			
+					Log.i("haiyang:createDB=", e.getMessage());
+			
+				}finally
+				{
+					db.close();
+				}
+        }
+ public List<<%=SourceTable.Name%>> GetSeedItem(String _where,Integer page,Integer size) {  
+		  SQLiteDatabase db = dbOpenHelper.getWritableDatabase();  
+		  List<<%=SourceTable.Name%>> entitys=new ArrayList<<%=SourceTable.Name%>>();
+		  Cursor cur=null;
+		   	String[] columns={
+				<% foreach (ColumnSchema col in SourceTable.Columns ){
+					
+				  %>
+				 <%= col.Name.ToUpper() %> , 
+				<% } %>
+			};
+	        String where = " 1=1 "+_where;
+		    String groupBy=null;
+		    String having=null;
+		    String orderBy= <% foreach (ColumnSchema col in SourceTable.Columns ){
+					if(col.IsPrimaryKeyMember){%><%= col.Name.ToUpper() %>+" desc";<%}}%>
+		    int offset=page*size;
+		    String limit=size+","+offset;
+		    String[] whereArgs={"======================"};
+		        try{
+		        
+		        cur=db.query(TABLE_NAME, columns, where, whereArgs, null, null, limit);
+		        
+		        while (cur.moveToNext()) {
+		        	<%=SourceTable.Name%> entity=new <%=SourceTable.Name%>();
+					
+					<% for(int i=0;i<SourceTable.Columns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				 entity.set<%= column.Name %> (  cur.get<%=GetJavaModeType(column)%>(<%=i%>) );
+			
+				<% } %>
+					entitys.add(entity);
+					
+				}
+		        } catch (SQLException ex) {  
+		        	  Log.i("execSQL:SQLException=", ex.getMessage());  
+		        }
+		        finally
+		  	     {
+		        	 if (cur !=null) 
+				        	cur.close();
+		  		  db.close();
+		  	  }
+		        return entitys;
+		    } 
+
+	 public <%=SourceTable.Name%> GetItem(String id) {  
+		  SQLiteDatabase db = dbOpenHelper.getWritableDatabase();  
+		  Cursor cur=null;
+		  <%=SourceTable.Name%> entity=new <%=SourceTable.Name%>();
+		
+		        String[] whereArgs={id};
+		        try{
+		        
+					String[] columns={
+					<% foreach (ColumnSchema col in SourceTable.Columns ){
+				  %>
+				 <%= col.Name.ToUpper() %> , 
+				<% } %>
+					};
+		        	String where =ID+"=? ";
+		        cur=db.query(TABLE_NAME, columns, where, whereArgs, null, null, null);
+		        while (cur.moveToNext()) {
+		        	
+					
+					<% for(int i=0;i<SourceTable.Columns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				 entity.set<%= column.Name %> (  cur.get<%=GetJavaModeType(column)%>(<%=i%>) );
+			
+				<% } %>
+				}
+		        } catch (SQLException ex) {  
+		        	  Log.i("execSQL:SQLException=", ex.getMessage());  
+		        }
+		        finally
+		  	     {
+		        	 if (cur !=null) 
+				        	cur.close();
+		  		  db.close();
+		  	  }
+		        return entity;
+		    } 
+	
+	
+     	public void deleteItem(String id) {
+		  SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+	  try {
+	
+	  db.delete(TABLE_NAME, " Id = '"+id+"'", null);
+	  } catch (SQLiteException e) {
+		  Log.i("execSQL:SQLiteException=", e.getMessage());
+
+	  }finally
+	  {
+		  db.close();
+	  }
+	}
+
+
+	public void dropTable() {
+	  SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+	  String sql = "drop table " + TABLE_NAME;
+	  try {
+	  db.execSQL(sql);
+	//  setTitle("数据表成功删除：" + sql);
+	  } catch (SQLiteException e) {
+		  Log.i("execSQL:SQLiteException=", e.getMessage());
+	  }finally
+	  {
+		  db.close();
+	  }
+	}
+
+public void insertItem(<%=SourceTable.Name%> entity ) {
+	  SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+	  String sql1 = "insert into " + TABLE_NAME + " (" 
+				<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				+<%= column.Name.ToUpper() %>+","
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				+<%= column.Name.ToUpper() %>
+				<% } %>
+			+")values(<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++)%><%{ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];%>?,<%}%>?);";
+			 
+	    Object[] args = new Object[]{
+		<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				entity.get<%= column.Name %>(),
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				entity.get<%= column.Name %>()};
+				<% } %>
+	  try {
+	  db.execSQL(sql1,args);  
+	  Log.i("execSQL=", sql1);
+	  } catch (SQLiteException e) {
+		  Log.i("execSQL:SQLiteException=", e.getMessage());
+	  }finally
+	  {
+		  db.close();
+	  }
+	}
+
+ public int update(<%=SourceTable.Name%> entity,String _where,String id)
+	 {
+		  SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+		  String where="1=1 " +_where;
+		  String[] whereArgs={id};
+		  int ret=0;
+		  try {
+			  ContentValues cv=new ContentValues();
+			  	<% foreach (ColumnSchema col in SourceTable.Columns ){
+				  %>
+				cv.put( <%= col.Name.ToUpper()%> , entity.get<%= col.Name %>() ); 
+				<% } %>
+			  ret=db.update(TABLE_NAME, cv, where, whereArgs);
+		  } catch (SQLiteException e) {
+			  Log.i("execSQL:SQLiteException=", e.getMessage());
+
+		  }finally
+		  {
+			  db.close();
+		  }
+		  return ret;
+	 }
+
+
+
+}
+
+
+<script runat="template">
+// My methods here.
+
+public string GetCSType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "String";
+		case DbType.AnsiStringFixedLength: return "String";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "Boolean";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "Double";
+		case DbType.Date: return "Date";
+		case DbType.DateTime: return "Date";
+		case DbType.Decimal: return "Double";
+		case DbType.Double: return "Double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "Integer";
+		case DbType.Int64: return "Long";
+		case DbType.Object: return "String";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "Float";
+		case DbType.String: return "String";
+		case DbType.StringFixedLength: return "String";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "Double";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+//GetItem中使用
+public string GetJavaModeType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "String";
+		case DbType.AnsiStringFixedLength: return "String";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "Boolean";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "Double";
+		case DbType.Date: return "Date";
+		case DbType.DateTime: return "Date";
+		case DbType.Decimal: return "Double";
+		case DbType.Double: return "Double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "Int";
+		case DbType.Int64: return "Long";
+		case DbType.Object: return "String";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "Float";
+		case DbType.String: return "String";
+		case DbType.StringFixedLength: return "String";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "Double";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+
+
+
+public string GetSqlietType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "text";
+		case DbType.AnsiStringFixedLength: return "text";
+		case DbType.Binary: return "blob";
+		case DbType.Boolean: return "bool";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "text";
+		case DbType.Date: return "text";
+		case DbType.DateTime: return "text";
+		case DbType.Decimal: return "text";
+		case DbType.Double: return "text";
+		case DbType.Guid: return "text";
+		case DbType.Int16: return "text";
+		case DbType.Int32: return "text";
+		case DbType.Int64: return "text";
+		case DbType.Object: return "text";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "text";
+		case DbType.String: return "text";
+		case DbType.StringFixedLength: return "text";
+		case DbType.Time: return "text";
+		case DbType.UInt16: return "text";
+		case DbType.UInt32: return "text";
+		case DbType.UInt64: return "text";
+		case DbType.VarNumeric: return "text";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+</script>

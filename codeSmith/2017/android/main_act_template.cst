@@ -1,0 +1,188 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="ActivityName" Type="System.String" Category="Strings" Description="实体名称" %>
+<%@ Property Name="itemName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="createXmlName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="mainXmlName" Type="System.String" Category="Strings" Description="主页面名称" %>
+<%@ Property Name="imgName" Type="System.String" Category="Strings" Description="图片列" %>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+
+package com.hxyc.ui.help;
+
+import java.util.List;
+
+import myenum.RequestEnum;
+import net.tsz.afinal.http.AjaxParams;
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.lang.reflect.Type;
+import com.google.gson.reflect.TypeToken;
+import com.hxyc.activity.BaseActivity;
+import com.hxyc.app.R;
+import com.hxyc.bean.<%= ActivityName  %>Info;
+import com.hxyc.bean.RequestResult;
+import com.hxyc.config.Config;
+import com.hxyc.interfaces.IHttpRequest;
+import com.hxyc.interfaces.TitleOnClickListener;
+import com.hxyc.pulltorefresh.PullToRefreshListView;
+import com.hxyc.pulltorefresh.PullToRefreshBase.OnRefreshListener;
+import com.hxyc.ui.adapter.HelpLogListAdapter;
+import com.hxyc.ui.adapter.<%= ActivityName %>Adapter;
+import com.hxyc.util.HttpRequestTool;
+import com.hxyc.views.CustomToast;
+import com.hxyc.widget.TitleBar;
+import com.hxyc.widget.ListViewEmptyView;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
+
+/**
+ * 
+ * @description  <%= SourceTable.Description  %>
+ * @author 
+ * @date 
+ */
+public class <%= ActivityName  %>Act extends BaseActivity {
+
+    /** 是否请求数据中 */
+	public boolean isGetDataing = false; 
+	public <%=ActivityName%>Adapter adapter;
+	PullToRefreshListView pullLv;
+	TitleBar titleBar;
+	ListView lv;
+    ListViewEmptyView emptyView;
+	public int currentPage = 1;
+	public int showCount = 10;
+	ImageLoader imageLoader;
+	/**
+	 * 请求列表地址
+	 */
+	public static final String Address = "Address";
+
+	HttpRequestTool<<%=ActivityName%>Info> httpRequestTool = new HttpRequestTool<<%=ActivityName%>Info>();
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.act_<%=mainXmlName%>)   ;
+		initView();
+		initTool();
+		initListener();
+        getData();
+	}
+
+	private void initView() {
+		pullLv = (PullToRefreshListView) findViewById(R.id.act_<%=mainXmlName %>_lv);
+        emptyView=(ListViewEmptyView) findViewById(R.id.act_<%=mainXmlName %>_lv_empty);
+		titleBar = (TitleBar) findViewById(R.id.act_<%=mainXmlName %>_title);
+		titleBar.setTitle("<%=SourceTable.Description %>");
+	}
+
+	private void initListener() {
+		pullLv.setOnRefreshListener(new OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+				if (lv.getCount() == 0
+						|| ((ListView) pullLv.getRefreshableView())
+								.getFirstVisiblePosition() == 0) {
+					adapter.remove();
+					getData();
+				} else if (lv.getLastVisiblePosition() == lv.getCount() - 1) {
+					currentPage++;
+					getData();
+				}
+			}
+		});
+		titleBar.setLeftClickListener(new TitleOnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onBackPressed();
+			}
+		});
+		lv.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+
+			}
+		});
+		lv.setOnScrollListener(new PauseOnScrollListener(imageLoader, true, false));
+	}
+
+	private void initTool() {
+		imageLoader=ImageLoader.getInstance();
+		adapter = new <%= ActivityName %>Adapter(this,imageLoader);
+		lv = pullLv.getRefreshableView();
+		lv.setAdapter(adapter);
+        lv.setEmptyView(emptyView);
+	}
+
+	public void getData() {
+		if (isGetDataing)
+			return;
+		isGetDataing = true;
+		final AjaxParams params = new AjaxParams();
+		params.put("fkey", Config.fkey);
+		params.put("currentPage", currentPage + "");
+		params.put("showCount", showCount + "");
+		httpRequestTool.request(Config.api_url + Address, params,
+				false, this, "加载中...", new IHttpRequest() {
+					@Override
+					public void callbackOnSuccess(Object t) {
+						isGetDataing = false;
+	                    Type type = new TypeToken<List<<%=ActivityName%>Info>>() {}.getType();
+						RequestResult result = httpRequestTool.responseHander(
+								t, RequestEnum.varList,type);
+						if (result.result == 1) {
+							List<<%=ActivityName%>Info> list = (List<<%=ActivityName%>Info>) result.resultObj;
+							if (list.size() > 0) {
+								adapter.addDataAll(list);
+                                adapter.notifyDataSetChanged();
+							} else
+								currentPage--;
+						}
+						pullLv.onRefreshComplete();
+					}
+
+					@Override
+					public void callbackOnFailure() {
+						isGetDataing = false;
+						currentPage--;
+						pullLv.onRefreshComplete();
+					}
+				});
+	}
+
+	@Override
+	public void onBackPressed() {
+		
+		super.onBackPressed();
+	}
+    	@Override
+	protected void onDestroy() {
+         
+		super.onDestroy();
+	}
+	
+}
+    
+  
+
+
+     
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

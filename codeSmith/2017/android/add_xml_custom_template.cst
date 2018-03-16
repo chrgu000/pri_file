@@ -1,0 +1,67 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="ActivityName" Type="System.String" Category="Strings" Description="实体名称" %>
+<%@ Property Name="itemName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="createXmlName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="mainXmlName" Type="System.String" Category="Strings" Description="主页面名称" %>
+<%@ Property Name="imgName" Type="System.String" Category="Strings" Description="图片列" %>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+      android:background="#ffffff"
+    android:orientation="vertical" >
+          <com.hxyc.widget.TitleBar
+        android:id="@+id/act_<%=itemName %>_add_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+           <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember||isContinue(column)){continue;} %>
+ <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:orientation="horizontal" >
+        <TextView  
+        android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:background="@drawable/shape_help_layout_left_not_bottom_border_gray_bg"
+                android:gravity="center_vertical"
+                 
+                android:paddingLeft="5dp"
+                android:paddingBottom="3dp"
+                android:paddingRight="5dp"
+                android:paddingTop="3dp"
+        android:text="<%=Camel(column.Description) %>"/>
+        <EditText 
+          android:id="@+id/act_<%=itemName %>_add_<%=Camel(column.Name) %>_edit"
+           android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="7"
+                android:background="@drawable/shape_help_layout_right_not_bottom_border"
+                android:paddingLeft="5dp"
+                android:paddingBottom="3dp"
+                android:paddingRight="5dp"
+                android:paddingTop="3dp"/>
+    </LinearLayout>
+       <%}%>    
+            <Button 
+            android:layout_margin="5dp"
+            android:id="@+id/act_<%=itemName %>_add_btn"
+            android:layout_width="match_parent"
+            android:layout_height="35dp" 
+           />
+</LinearLayout>
+ 
+      
+     
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

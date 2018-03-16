@@ -1,0 +1,183 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False"  ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using <%=nameSpace %>.DAL;
+using <%=nameSpace %>.MODEL;
+using CommonLibrary;
+namespace <%=nameSpace %>.BLL
+{
+ public class <%= getT_Table(SourceTable.Name) %>BLL
+    {
+	
+	<%= getT_Table(SourceTable.Name ) %>DAL dal;
+      public <%=getT_Table(SourceTable.Name) %>BLL()
+      {
+		dal = new <%= getT_Table(SourceTable.Name) %>DAL();
+      }
+
+      #region Add
+      public int Add(<%= getT_Table(SourceTable.Name) %> mode)
+      {
+
+          return dal.Add(mode);
+      }
+
+
+      #endregion
+
+
+      #region del
+      public int Del(<%=getT_Table(SourceTable.Name) %> mode)
+      {
+        
+          return dal.Del(mode);
+      }
+
+      #endregion
+      #region update
+      public int Update(<%=getT_Table(SourceTable.Name) %> mode)
+      {
+
+          return dal.Update(mode);
+      }
+
+
+      #endregion
+      #region select
+      public List<<%=getT_Table(SourceTable.Name) %>> GetList()
+      {
+		string where="";
+		List<<%=getT_Table(SourceTable.Name) %>> ls = dal.GetList(where);
+		<% for(int i=0;i<SourceTable.ForeignKeys.Count;i++){%>
+		<%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%>BLL fk<%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%> = new <%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%>BLL();
+		 foreach (<%=getT_Table(SourceTable.Name )%> item in ls)
+         {
+          item.<%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%> =fk<%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%>.GetMode(item.<%=SourceTable.ForeignKeys[i].ForeignKeyMemberColumns[0].Name %>);
+         }
+			
+			<%}%>
+			
+          return ls;
+      }
+	
+      public <%=getT_Table(SourceTable.Name) %> GetMode(<% foreach (ColumnSchema col in SourceTable.Columns ){if(col.IsPrimaryKeyMember){%><%= GetCSType(col) %>  <%= col.Name %> <%}} %> )
+      {
+        <%=getT_Table(SourceTable.Name) %> item = dal.GetMode(<% foreach (ColumnSchema col in SourceTable.Columns ){if(col.IsPrimaryKeyMember){%><%= col.Name %> <%}} %> );
+		<% for(int i=0;i<SourceTable.ForeignKeys.Count;i++){%>
+		<%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%>BLL fk<%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%> = new <%= getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name )%>BLL();
+		
+          item.<%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%> =fk<%=getT_Table(SourceTable.ForeignKeys[i].PrimaryKeyTable.Name)%>.GetMode(item.<%=SourceTable.ForeignKeys[i].ForeignKeyMemberColumns[0].Name %>);
+      
+			<%}%>
+          return item;
+      }
+
+      public string GetStr(<%=getT_Table(SourceTable.Name) %> mode)
+      {
+
+          return dal.GetStr(mode);
+      }
+      #endregion
+
+      #region paging
+      public static int count = 0;
+ 
+      /// <summary>
+      /// 分页存储过程
+      /// </summary>
+      /// <param name="sqlstr">查询字符串</param>
+      /// <param name="size">显示的行数</param>
+      /// <param name="index">第几页</param>
+      /// <returns>object=list,count=总页数</returns>
+      public string PageStoredProcedure( int size, int index)
+      {
+		string sql="select * from <%=SourceTable.Name %>   ";
+           ObjectAndCount oac = dal.PageStoredProcedure(sql, size, index);
+           string jsonStr = JsonHelp.Serialize<List<<%= getT_Table(SourceTable.Name)  %>>>(oac);
+          return jsonStr;
+      }
+	  /// <summary>
+      /// 分页存储过程
+      /// </summary>
+      /// <param name="sqlstr">查询字符串</param>
+      /// <param name="size">显示的行数</param>
+      /// <param name="index">第几页</param>
+      /// <returns>object=list,count=总页数</returns>
+     public string PageStoredProcedure(string where, int size, int index)
+      {
+			 string sql="select * from <%= SourceTable.Name  %> where 1=1 ";
+           if (where != null && where.Trim().Length > 0)
+                sql += where;
+            ObjectAndCount oac = dal.PageStoredProcedure(sql, size, index);
+          string jsonStr = JsonHelp.SerializeList<List<<%= getT_Table(SourceTable.Name)  %>>>(oac);
+          return jsonStr;
+      }
+      #endregion
+    }
+}
+
+
+
+
+
+<script runat="template">
+// My methods here.
+public string getT_Table(string str)
+{
+	str=str.Substring(2);
+	str=str.Substring(0,1).ToUpper()+str.Substring(1);
+	str=str.Replace("_","");
+	return str;
+}
+public string GetCSType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "string";
+		case DbType.AnsiStringFixedLength: return "string";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "bool";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "decimal";
+		case DbType.Date: return "DateTime";
+		case DbType.DateTime: return "DateTime";
+		case DbType.Decimal: return "decimal";
+		case DbType.Double: return "double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "int";
+		case DbType.Int64: return "long";
+		case DbType.Object: return "object";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "float";
+		case DbType.String: return "string";
+		case DbType.StringFixedLength: return "string";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "decimal";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+</script>

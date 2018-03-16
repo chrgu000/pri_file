@@ -1,0 +1,49 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="Views" Type="SchemaExplorer.ViewSchemaCollection" Category="Context" Description="???????????????" %>
+<%@ Property Name="NameSpace" Type="System.String" Category="Context" Description="???????????MySystem???????????????????" %>
+<%@ Property Name="isCreateMODEL" Type="System.Boolean" Default="True" Optional="False" Category="????" Description="????MODEL?????????" %>
+<%@ Property Name="modelPath" Type="System.String" Default=".MODEL" Optional="True" Category="????" Description="????MODEL????????????????????.MODEL?" %>
+
+
+
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+
+
+
+<%@ Register Name="ZhangXiangWei" Template="E:\kuaiPan\codeSmithTemplate\2014\C#\Custom_mode.cst" MergeProperties="False" ExcludeProperties="" %>
+
+
+
+<%
+/*
+Dal
+*/
+%>
+<% foreach( ViewSchema table in this.Views){ 
+
+    CodeTemplate st = null;
+    string outputFile = "";
+    
+	st =new ZhangXiangWei();
+	st.SetProperty("ViewScheme",table);
+	st.SetProperty("NameSpace",NameSpace);
+	//st.RenderToFile("\\"+table+".cs",true);
+	
+	
+    outputFile = string.Format("E:\\CodeCreate\\view\\{0}.cs",table.Name.Substring(2));
+    
+    st.RenderToFile(outputFile,true);
+    }
+	Response.WriteLine("Model voer!");
+	%>

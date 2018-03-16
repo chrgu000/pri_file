@@ -1,0 +1,157 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+
+
+
+create proc proc_<%= SourceTable.Name %>_add
+<% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+                 @<%= column.Name %> <%= getSqlserverDbType(column) %>,	
+				<% } %>
+                <% for(int i=SourceTable.Columns.Count-1;i<SourceTable.Columns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+                 @<%= column.Name %> <%= getSqlserverDbType(column) %>
+				<% } %>
+as
+begin
+
+    INSERT INTO <%= SourceTable.Name %>          (
+   <% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 					ColumnSchema column = SourceTable.Columns[i];	%>
+                 <%= column.Name %> ,	
+				<% } %>
+                <% for(int i=SourceTable.Columns.Count-1;i<SourceTable.Columns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+                 <%= column.Name %> 
+				<% } %>
+             )    
+			  VALUES (
+              <% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+                 @<%= column.Name %>,	
+				<% } %>
+                <% for(int i=SourceTable.Columns.Count-1;i<SourceTable.Columns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+                 @<%= column.Name %> 
+				<% } %>
+              )
+end
+go
+
+
+create proc proc_<%= SourceTable.Name %>_update
+<% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+                 @<%= column.Name %> <%= getSqlserverDbType(column,true) %>,	
+				<% } %>
+                <% for(int i=SourceTable.Columns.Count-1;i<SourceTable.Columns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+                 @<%= column.Name %> <%= getSqlserverDbType(column,true) %>	
+				<% } %>
+as
+begin
+     update <%= SourceTable.Name %>  set 
+   <% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 					ColumnSchema column = SourceTable.Columns[i];  if(column.IsPrimaryKeyMember) continue;	%>
+                 <%= column.Name %> =@<%= column.Name %>,	
+				<% } %>
+                <% for(int i=SourceTable.Columns.Count-1;i<SourceTable.Columns.Count;i++) %>
+				<% { 
+				 	ColumnSchema column = SourceTable.Columns[i];
+				%>
+                   <%= column.Name %> =@<%= column.Name %> 
+				<% } %>
+             where <% for(int i=0;i<SourceTable.Columns.Count-1;i++) 
+				 { 					ColumnSchema column = SourceTable.Columns[i];  if(column.IsPrimaryKeyMember) {%> <%= column.Name %> =@<%= column.Name %> ;<% break;}	}%>
+end
+go
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- #include file="ScriptTemplate.cst" -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

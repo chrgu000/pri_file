@@ -1,0 +1,600 @@
+﻿<%@ Import Namespace="CodeSmith.Engine.Json" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<script runat="template">
+public string Camel(string str)
+{
+    if(str.Length<2)
+        return str;
+	str=str.Substring(0,1).ToLower()+str.Substring(1);
+	
+	return str;
+}
+// My methods here.
+public string GetUpper(string str)
+{
+	str=str.Substring(0,1).ToUpper()+str.Substring(1);
+	return str;
+}
+public string getT_Table(string str)
+{
+	str=str.Substring(2);
+	str=str.Replace("_","");
+	return str;
+}
+/// <summary>
+/// 删除表的_ 符号开始字母小写
+/// </summary>
+/// <param name="str"></param>
+/// <returns></returns>
+public string del_Table(string str)
+{
+  // string asa=  str.Split(" ")[0];
+     string[] strs=str.Split('_');
+    str="";
+    for(int i=0;i<strs.Length;i++)
+    {
+        if(i==0)
+        str=Camel(strs[i]);
+        else
+            str+=GetUpper(strs[i]);
+    }
+    	return str;
+}
+
+/// <summary>
+/// 所有字符小写
+/// </summary>
+/// <param name="str"></param>
+/// <returns></returns>
+public string getLetterUpper(string str)
+{
+    	return str.ToLower();
+}
+
+/// <summary>
+/// 删除表的_ 符号.开始字母大写
+/// </summary>
+/// <param name="str"></param>
+/// <returns></returns>
+public string del_HeadUpper(string str)
+{
+  // string asa=  str.Split(" ")[0];
+     string[] strs=str.Split('_');
+     str="";
+    for(int i=0;i<strs.Length;i++)
+    {
+        str+=GetUpper(strs[i]);
+    }
+    	return str;
+}
+
+/// <summary>
+/// 删除字符的_ 符号.所以字母小写
+/// </summary>
+/// <param name="str"></param>
+/// <returns></returns>
+public string del_Column_Camel(string str)
+{
+  // string asa=  str.Split(" ")[0];
+     string[] strs=str.Split('_');
+    str="";
+    for(int i=0;i<strs.Length;i++)
+    {
+        str+=Camel(strs[i]);
+    }
+    	return str;
+}
+
+/// <summary>
+/// 删除字符的_ 符号.所以字母小写
+/// </summary>
+/// <param name="str"></param>
+/// <returns></returns>
+public string jeecg_Column_Camel(string str)
+{
+  // string asa=  str.Split(" ")[0];
+     string[] strs=str.Split('_');
+    if(strs.Length<=1)
+    {
+        return str.ToLower();
+    }else
+    {
+        str="";
+        for(int i=0;i<strs.Length;i++)
+        {
+            if(i==0)
+                str+=strs[i].ToLower();
+             else
+            str+=GetUpper(strs[i].ToLower());
+        }
+    }
+    	return str;
+}
+
+
+
+
+
+public string GetCSType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "string";
+		case DbType.AnsiStringFixedLength: return "string";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "bool";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "decimal";
+		case DbType.Date: return "DateTime";
+		case DbType.DateTime: return "DateTime";
+		case DbType.Decimal: return "decimal";
+		case DbType.Double: return "double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "int";
+		case DbType.Int64: return "long";
+		case DbType.Object: return "object";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "float";
+		case DbType.String: return "string";
+		case DbType.StringFixedLength: return "string";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "decimal";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+
+public string GetJavaTypeUpper(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "String";
+		case DbType.AnsiStringFixedLength: return "String";
+		case DbType.Binary: return "Byte[]";
+		case DbType.Boolean: return "Boolean";
+		case DbType.Byte: return "Byte";
+		case DbType.Currency: return "Double";
+		case DbType.Date: return "DateTime";
+		case DbType.DateTime: return "Date";
+		case DbType.Decimal: return "Double";
+		case DbType.Double: return "Double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "int";
+		case DbType.Int64: return "Long";
+		case DbType.Object: return "Object";
+		case DbType.SByte: return "SByte";
+		case DbType.Single: return "Float";
+		case DbType.String: return "String";
+		case DbType.StringFixedLength: return "String";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "int";
+		case DbType.UInt32: return "int";
+		case DbType.UInt64: return "Long";
+		case DbType.VarNumeric: return "Double";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+public string convertColumnType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return Camel(column.Name)+".ToString()";
+		case DbType.AnsiStringFixedLength: return Camel(column.Name)+".ToString()";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "("+Camel(column.Name)+" == \"1\" ? true : false)";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "decimal";
+		case DbType.Date: return Camel(column.Name)+".ToString()";
+		case DbType.DateTime: return Camel(column.Name)+".ToString()";
+		case DbType.Decimal: return  "decimal.Parse("+Camel(column.Name)+".ToString())";
+		case DbType.Double: return  "double.Parse("+Camel(column.Name)+".ToString())";
+		case DbType.Guid: return "Guid.NewGuid().ToString()";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return  "int.Parse("+Camel(column.Name)+".ToString())";
+		case DbType.Int64: return "long.Parse("+Camel(column.Name)+".ToString())";
+		case DbType.Object: return "object";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return  "float.Parse("+Camel(column.Name)+".ToString())";
+		case DbType.String: return Camel(column.Name)+".ToString()";
+		case DbType.StringFixedLength: return Camel(column.Name)+".ToString()";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "decimal.Parse("+Camel(column.Name)+".ToString())";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+    
+    
+
+public string GetCSTypeUpper(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "String";
+		case DbType.AnsiStringFixedLength: return "String";
+		case DbType.Binary: return "Byte[]";
+		case DbType.Boolean: return "Boolean";
+		case DbType.Byte: return "Byte";
+		case DbType.Currency: return "Decimal";
+		case DbType.Date: return "DateTime";
+		case DbType.DateTime: return "DateTime";
+		case DbType.Decimal: return "Decimal";
+		case DbType.Double: return "Double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "Int32";
+		case DbType.Int64: return "Int64";
+		case DbType.Object: return "Object";
+		case DbType.SByte: return "SByte";
+		case DbType.Single: return "Float";
+		case DbType.String: return "String";
+		case DbType.StringFixedLength: return "String";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "UInt32";
+		case DbType.UInt64: return "UInt64";
+		case DbType.VarNumeric: return "Decimal";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+/// <summary>
+/// 获取sqlserver的数据库类型值
+/// </summary>
+/// <param name="column"></param>
+/// <param name="isDefault"></param>
+/// <returns></returns>
+public string getSqlserverDbType(ColumnSchema column,bool isDefault)
+{
+    string defaultVal="";
+    if(isDefault)
+       defaultVal= GetSqlserverDefaultStr(column);
+    if(column.NativeType.ToUpper()=="VARCHAR"||column.NativeType.ToUpper()=="NVARCHAR"||column.NativeType.ToUpper()=="CHAR"
+        ||column.NativeType.ToUpper()=="NCHAR")//||column.NativeType=="BIT"||column.NativeType=="bigint"||column.NativeType=="DateTime"||column.NativeType=="")
+    {
+        return column.NativeType+"("+column.Size+")"+defaultVal;
+    }else if(column.NativeType.ToUpper()=="DECIMAL")
+        return column.NativeType+"("+column.Precision+","+column.Scale+")"+defaultVal;
+    else
+        return column.NativeType+defaultVal;
+}
+/// <summary>
+/// 获取sqlserver的数据库类型值
+/// </summary>
+/// <param name="column"></param>
+/// <param name="isDefault"></param>
+/// <returns></returns>
+public string getSqlserverDbType(ColumnSchema column)
+{
+    
+        return getSqlserverDbType(column,false);
+}
+
+
+/// <summary>
+/// 获取sqlserver 存储过程的数据库类型值
+/// </summary>
+/// <param name="schema"></param>
+/// <returns></returns>
+public string getSqlserverProcDbType(ParameterSchema schema)
+{
+    if(schema.NativeType.ToUpper()=="VARCHAR"||schema.NativeType.ToUpper()=="NVARCHAR"||schema.NativeType.ToUpper()=="CHAR"
+        ||schema.NativeType.ToUpper()=="NCHAR")//||column.NativeType=="BIT"||column.NativeType=="bigint"||column.NativeType=="DateTime"||column.NativeType=="")
+    {
+        return schema.NativeType+"("+schema.Size+")";
+    }else if(schema.NativeType.ToUpper()=="DECIMAL")
+        return schema.NativeType+"("+schema.Precision+","+schema.Scale+")";
+    else
+        return schema.NativeType;
+}
+
+public string GetCSDBTypeUpper(ParameterSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "String";
+		case DbType.AnsiStringFixedLength: return "String";
+		case DbType.Binary: return "Byte[]";
+		case DbType.Boolean: return "Boolean";
+		case DbType.Byte: return "Byte";
+		case DbType.Currency: return "Decimal";
+		case DbType.Date: return "DateTime";
+		case DbType.DateTime: return "DateTime";
+		case DbType.Decimal: return "Decimal";
+		case DbType.Double: return "Double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "Int32";
+		case DbType.Int64: return "Int64";
+		case DbType.Object: return "Object";
+		case DbType.SByte: return "SByte";
+		case DbType.Single: return "Float";
+		case DbType.String: return "String";
+		case DbType.StringFixedLength: return "String";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "UInt32";
+		case DbType.UInt64: return "UInt64";
+		case DbType.VarNumeric: return "Decimal";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+
+public string GetSqlserverDefaultStr(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "=null";
+		case DbType.AnsiStringFixedLength: return "=null";
+		case DbType.Binary: return "=null";
+		case DbType.Boolean: return "=0";
+		case DbType.Byte: return "=null";
+		case DbType.Currency: return "=0";
+		case DbType.Date: return "=0";
+		case DbType.DateTime: return "=getdate()";
+		case DbType.Decimal: return "=0";
+		case DbType.Double: return "=0";
+		case DbType.Guid: return "=newid()";
+		case DbType.Int16: return "=0";
+		case DbType.Int32: return "=0";
+		case DbType.Int64: return "=0";
+		case DbType.Object: return "=null";
+		case DbType.SByte: return "=null";
+		case DbType.Single: return "=0";
+		case DbType.String: return "=null";
+		case DbType.StringFixedLength: return "=null";
+		case DbType.Time: return "=null";
+		case DbType.UInt16: return "=null";
+		case DbType.UInt32: return "=0";
+		case DbType.UInt64: return "=0";
+		case DbType.VarNumeric: return "=0";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+/// <summary>
+/// 判断是否过滤字段
+/// </summary>
+/// <param name="column"></param>
+/// <returns></returns>
+public bool isContinue(ColumnSchema column)
+{
+        string prefixStr="";//"TF";                                                              
+      string[] continueStrs={"createBy","CREATE_BY","CREATENAME","CREATEDATE","CREATE_DATE","CREATE_NAME","UPDATEDATE","UPDATE_DATE","UPDATEBY","UPDATE_BY","UPDATENAME","UPDATE_NAME","ID"
+      ,"TFID","tfCreateUserId","TFCREATEUSERID","tfDeleted"
+      ,"tfSysUserId","tfSysRolesId","tfUpdate_UserId","tfUpdate_Date","tfSysDeptId","tfSysUnitId","tfDeleteFlag","tfRemark"
+      ,"tfOrder","tfCreateTime","tfCode"
+      };
+    for(int i=0;i<continueStrs.Length;i++)
+    {
+        if(prefixStr+continueStrs[i].ToUpper()==column.Name.ToUpper())
+            return true;
+    }
+    return false;
+}
+
+/// <summary>
+/// 修改方法判断是否过滤字段
+/// </summary>
+/// <param name="column"></param>
+/// <returns></returns>
+public bool editIsContinue(ColumnSchema column)
+{
+        string prefixStr="";//"TF";                                                              
+      string[] continueStrs={"createBy","CREATE_BY","CREATENAME","CREATEDATE","CREATE_DATE","CREATE_NAME"
+      ,"TFID","tfCreateUserId","TFCREATEUSERID","tfDeleted"
+      ,"tfSysUserId","tfSysRolesId","tfSysDeptId"
+      ,"tfCreateTime","tfCode"
+      };
+    for(int i=0;i<continueStrs.Length;i++)
+    {
+        if(prefixStr+continueStrs[i].ToUpper()==column.Name.ToUpper())
+            return true;
+    }
+    return false;
+}
+/// <summary>
+/// 判断是否是dropDownListStr字段
+/// </summary>
+/// <param name="dropDownListStr"></param>
+/// <param name="isCode">判断true=code还是false=name</param>
+/// <param name="column"></param>
+/// <returns></returns>
+public string isDropDownListStr(string dropDownListStr,bool isCode,ColumnSchema column )
+{
+     if(dropDownListStr.IndexOf("[")==-1)
+        return "";
+    JArray root = JArray.Parse(dropDownListStr);
+    string ii="";
+     for (int j=0;j<root.Count;j++)
+    {
+        JToken jj=root[j];
+        ii= jj["name"].ToString();
+        if(!isCode&&jj["name"].ToString()==column.Name)
+            return jj["code"].ToString();
+        else if(isCode&&jj["code"].ToString()==column.Name)
+            return jj["name"].ToString();
+    }
+      
+   return  "";
+}
+/// <summary>
+/// jsp页面添加方法判断是否过滤字段
+/// </summary>
+/// <param name="column"></param>
+/// <param name="isCode">是否code 0是不做判断，1是code，2是name</param>
+/// <returns></returns>
+public bool addIsContinue(ColumnSchema column,string dropDownListStr,int isCode)
+{
+        string prefixStr="";//"TF";                                                              
+      string[] continueStrs={"createBy","CREATE_BY","CREATENAME","CREATEDATE","CREATE_DATE","CREATE_NAME"
+      ,"TFID","tfCreateUserId","TFCREATEUSERID","tfDeleted"
+      ,"tfSysUserId","tfSysRolesId","tfSysDeptId"
+      ,"tfUpdate_UserId","tfUpdate_Date"
+      ,"tfSysUnitId","tfDeleteFlag","tfCreateTime"
+      };
+    for(int i=0;i<continueStrs.Length;i++)
+    {
+        if(prefixStr+continueStrs[i].ToUpper()==column.Name.ToUpper())
+            return true;
+    }
+    if(isCode==2&&isDropDownListStr(dropDownListStr,false,column)!="")
+    {
+        return true;
+    }
+    return false;
+}
+public string createHtmlCtrl(ColumnSchema column,string dropDownListStr)
+{
+
+        if(column.Name =="tfCode"){
+            return  "<c:choose>"+
+						"<c:when test=\"${not empty pd.TFID}\">"+
+							"<input class=\""+getTypeClass(column)+"\" style='width:95%;' type=\"text\" name=\""+column.Name+"\" id=\""+column.Name+"\" value=\"${pd."+column.Name+" }\" readonly=\"readonly\"/>"+
+						"</c:when>"+
+						"<c:otherwise>"+
+							"<input class=\"inputCode\" style='width:95%;' type=\"text\" name=\""+column.Name+"\" id=\""+column.Name+"\" value=\"${pd."+column.Name+" }\" maxlength=\""+ sqlTypeLength(column) +"\" onblur=\"uniqueValidate(this.value,'',this,'"+column.Description+"')\" placeholder=\"这里输入"+column.Description+"\" title=\""+column.Description+"\"/>"+
+						"</c:otherwise>"+
+					"</c:choose>";
+                }else if(column.Description.IndexOf("日期")>-1||column.Name.IndexOf("date")>-1||column.Description.IndexOf("时间")>-1){
+                     return   " <input class=\"span10 date-picker\" name=\""+column.Name+"\" id=\""+column.Name+"\" value=\"${pd."+column.Name+" }\" type=\"text\" onfocus=\"WdatePicker({el:'"+column.Name+"',dateFmt:'yyyy-MM-dd'})\" readonly=\"readonly\" style=\"width:88px;\" placeholder=\""+column.Description+"\"/>";
+                }else if(isDropDownListStr(dropDownListStr,true,column)!=""){
+                     return   "	<select style='width:80%;' name=\""+column.Name+"\" id=\""+column.Name+"\" class=\"chzn-select\" > <option value=\"\">--请选择--</option> </select>";
+                }
+                //else if(column.DataType==DbType.StringFixedLength){
+                //     return   "	<textarea style='width:80%;' name=\""+column.Name+"\" id=\""+column.Name+"\" class=\"chzn-select\" > </textarea>";
+                //}
+                else{
+                     return   "<input class=\""+getTypeClass(column)+"\" style='width:99%;' type=\"text\" name=\""+column.Name+"\" id=\""+column.Name+"\" value=\"${pd."+column.Name+" }\" maxlength=\""+ sqlTypeLength(column) +"\" scale=\""+column.Scale+"\"  placeholder=\"这里输入"+column.Description+"\" title=\""+column.Description+"\"/>";
+                }
+}
+
+/***
+* 输出下拉框逻辑代码
+*/
+public string getDropDownListCtrl(ColumnSchemaCollection columns,string dropDownListStr)
+{
+    string str="";
+    for(int i=0;i< columns.Count;i++){
+        //str=str+ columns[i].Name;
+        string name=isDropDownListStr(dropDownListStr,true,columns[i]);
+        if(name!=""){
+             str=str+ "$(\"#"+columns[i].Name+"\").chosen({\n"+
+				"no_results_text: \"没有找到结果！\",\n"+
+				"search_contains:true \n"+
+			"}).change(function(){\n"+
+			"	var name=$(this).find(\"option:selected\").text();\n"+
+			"	$(\"#"+name+"\").val(name);\n"+
+			"});"; 
+       }
+    }
+    
+    return str;
+}
+
+/***
+* 根据数据类型，设置class
+*/
+public string getTypeClass(ColumnSchema column)
+{
+    string type="mysql";
+    if(column.DataType==DbType.Decimal)
+    {
+        return "inputDevimal";
+    }else
+    if(column.Name =="tfCode")
+        return "inputCode";
+    return "";
+}
+
+/***
+* 不一样的数据库长度计算不一样，mysql=Column.Size/3
+*/
+public int sqlTypeLength(ColumnSchema column)
+{
+    string type="mysql";
+    if(column.DataType==DbType.Decimal)
+    {
+        return column.Precision;
+    }else
+    if(type=="mysql")
+        return column.Size/3;
+    return column.Size;
+}
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

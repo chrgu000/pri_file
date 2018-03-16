@@ -1,0 +1,96 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="ActivityName" Type="System.String" Category="Strings" Description="实体名称" %>
+<%@ Property Name="itemName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="createXmlName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="mainXmlName" Type="System.String" Category="Strings" Description="主页面名称" %>
+<%@ Property Name="imgName" Type="System.String" Category="Strings" Description="图片列" %>
+<%@ Property Name="isCoerceOutImg" Type="System.Boolean" Category="Strings" Description="强制输出图片列" %>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+
+package com.hxyc.bean;
+
+import java.io.Serializable;
+import java.util.Date;
+  	/**
+	*备注:<%= SourceTable.Description %>
+	*/
+    public class <%= ActivityName  %>Info implements Serializable
+    {
+        public <%= ActivityName  %>Info()
+        { }
+		
+		
+		<% foreach (ColumnSchema column in SourceTable.Columns) { %>
+		/**
+		*<%= column.Description %>
+		*/
+		private <%= GetJavaTypeUpper(column) %>   <%=column.Name %>;
+		<% } %>
+		<%	foreach (TableKeySchema  key in SourceTable.ForeignKeys){	%>
+		private  <%= key.PrimaryKeyTable.Name  %>  <%= key.PrimaryKeyTable.Name  %>;
+		<%}%>
+        <%if(isCoerceOutImg){%>
+        private  String  <%= imgName %>;
+			<%}%>
+		<% foreach (ColumnSchema column in SourceTable.Columns) { %>
+		
+		/**
+		*<%= column.Description %>
+		*/
+		public <%= GetJavaTypeUpper(column) %> get<%= GetUpper(column.Name) %>()
+		{
+			 return <%= Camel(column.Name) %>; 
+		}
+        /**
+		*<%= column.Description %>
+		*/
+		public void  set<%= GetUpper(column.Name) %> (<%= GetJavaTypeUpper(column)%>  _<%= column.Name %> )
+		{
+			<%= Camel(column.Name) %> = _<%= column.Name %> ;
+		}
+		
+		<% } %>
+        
+           <%if(isCoerceOutImg){%>
+           /**图片地址*/
+         public String get<%= GetUpper(imgName) %>()
+		{
+			 return <%= imgName %>; 
+		}
+         /**图片地址*/
+        	public void  set<%= GetUpper(imgName) %> (String  _<%= imgName %> )
+		{
+			<%= imgName %> = _<%= imgName %> ;
+		}
+			<%}%>
+        
+		
+		<%	foreach (TableKeySchema  key in SourceTable.ForeignKeys){	%>
+		
+		public <%= key.PrimaryKeyTable.Name  %>  get<%= key.PrimaryKeyTable.Name  %>()
+		{
+		return <%= key.PrimaryKeyTable.Name  %>;
+		}
+		/**
+		*<%= key.PrimaryKeyTable.Description %>
+		*/
+		public <%= key.PrimaryKeyTable.Name  %>  set<%= key.PrimaryKeyTable.Name  %>(<%= key.PrimaryKeyTable.Name  %>  _<%= key.PrimaryKeyTable.Name  %>)
+		{
+		return <%= key.PrimaryKeyTable.Name  %> =_<%= key.PrimaryKeyTable.Name  %>;
+		
+		}
+		<%}%>
+
+    }
+   
+      
+     
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

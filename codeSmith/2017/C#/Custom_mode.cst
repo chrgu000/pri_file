@@ -1,0 +1,102 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="NameSpace" Type="System.String" Category="Strings" Description="nameSpace" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="ViewScheme" Type="SchemaExplorer.ViewSchema" Category="Context" Description="ViewScheme" %>
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace <%= NameSpace %>.MODEL
+{
+    [Serializable]
+    public class <%= ToUpper (getT_View( ViewScheme.Name) ) %> 
+    {
+        public <%=ToUpper( getT_View( ViewScheme.Name) ) %>()
+        { }
+        #region 字段
+		<% foreach (ViewColumnSchema column in ViewScheme.Columns) { %>
+		private <%= GetCSType(column) %> _<%=Camel( column.Name) %>;
+		<% } %>
+
+		#endregion Model
+		
+		#region 属性
+        	<% foreach (ViewColumnSchema column in ViewScheme.Columns) { %>
+         public  <%= GetCSType(column) %> <%=ToUpper( column.Name) %>
+        {
+            get { return _<%=Camel( column.Name) %>; }
+            set { _<%=Camel( column.Name) %> = value; }
+        }
+        
+        
+		<% } %>
+        #endregion Model
+
+    }
+}
+
+<script runat="template">
+// My methods here.
+
+public string Camel(string str)
+{
+
+	str=str.Substring(0,1).ToLower()+str.Substring(1);
+	
+	return str;
+}
+public string ToUpper(string str)
+{
+
+	str=str.Substring(0,1).ToUpper()+str.Substring(1);
+	
+	return str;
+}
+public string getT_View(string str)
+{
+	str=str.Replace("_","");
+	return str;
+}
+
+public static string GetCSType(ViewColumnSchema column)
+		{
+			if (column.Name.EndsWith("TypeCode")) return column.Name;
+			
+			switch (column.DataType)
+			{
+				case DbType.AnsiString: return "string";
+				case DbType.AnsiStringFixedLength: return "string";
+				case DbType.Binary: return "byte[]";
+				case DbType.Boolean: return "bool";
+				case DbType.Byte: return "byte";
+				case DbType.Currency: return "double";
+				case DbType.Date: return "string";
+				case DbType.DateTime: return "string";
+				case DbType.Decimal: return "decimal";
+				case DbType.Double: return "double";
+				case DbType.Guid: return "Guid";
+				case DbType.Int16: return "short";
+				case DbType.Int32: return "int";
+				
+				case DbType.Int64: return "long";
+				case DbType.Object: return "string";
+				case DbType.SByte: return "sbyte";
+				case DbType.Single: return "float";
+				case DbType.String: return "string";
+				case DbType.StringFixedLength: return "string";
+				case DbType.Time: return "TimeSpan";
+				case DbType.UInt16: return "ushort";
+				case DbType.UInt32: return "uint";
+				case DbType.UInt64: return "ulong";
+				case DbType.VarNumeric: return "double";
+				default:
+				{
+					return "__UNKNOWN__" + column.NativeType;
+				}
+			}
+		}
+</script>

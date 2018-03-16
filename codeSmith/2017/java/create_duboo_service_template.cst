@@ -1,0 +1,34 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+
+<%@ Property Name="className" Type="System.String" Category="Strings" Description="类名称" %>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+package com.hxyc.service.impl;
+
+import com.alibaba.dubbo.config.annotation.Service;
+import com.hxyc.thrift.ApiException;
+import com.hxyc.thrift.Test3;
+import org.apache.thrift.TException;
+
+/**
+ * 创建者 张相伟
+ * 功能
+ */
+@Service
+public class <%=className%>Impl implements <%=className%>.Iface {
+    @Override
+    public String doAction(int i, String str) throws ApiException, TException {
+        return "11111";
+    }
+}
+
+
+     
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

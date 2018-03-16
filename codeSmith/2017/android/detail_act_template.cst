@@ -1,0 +1,173 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="ActivityName" Type="System.String" Category="Strings" Description="实体名称" %>
+<%@ Property Name="itemName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="createXmlName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="mainXmlName" Type="System.String" Category="Strings" Description="主页面名称" %>
+<%@ Property Name="imgName" Type="System.String" Category="Strings" Description="图片列" %>
+<%@ Property Name="isCoerceOutImg" Type="System.Boolean" Category="Strings" Description="强制输出图片列" %>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+
+package com.hxyc.ui.help;
+
+import java.util.List;
+
+import myenum.RequestEnum;
+import net.tsz.afinal.http.AjaxParams;
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Button;
+import android.widget.EditText;
+
+import com.hxyc.activity.BaseActivity;
+import com.hxyc.app.R;
+import com.hxyc.bean.<%= ActivityName  %>Info;
+import com.hxyc.bean.RequestResult;
+import com.hxyc.config.Config;
+import com.hxyc.interfaces.IHttpRequest;
+import com.hxyc.interfaces.TitleOnClickListener;
+import com.hxyc.pulltorefresh.PullToRefreshListView;
+import com.hxyc.pulltorefresh.PullToRefreshBase.OnRefreshListener;
+import com.hxyc.ui.adapter.HelpLogListAdapter;
+import com.hxyc.ui.adapter.MyTaskAdapter;
+import com.hxyc.util.HttpRequestTool;
+import com.hxyc.util.ImgUrlTool;
+import com.hxyc.views.CustomToast;
+import com.hxyc.widget.TitleBar;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+
+/**
+ * 
+ * @description <%= SourceTable.Description  %>详细
+ * @author 
+ * @date 
+ */
+public class <%= ActivityName %>DetailAct extends BaseActivity {
+
+	TitleBar titleBar;
+	/**
+	 * 
+	 */
+	public static final String address = "address";
+    ImageLoader imageLoader;
+    DisplayImageOptions options;
+	HttpRequestTool<<%= ActivityName  %>Info> httpRequestTool = new HttpRequestTool<<%= ActivityName  %>Info>();
+    <%= ActivityName  %>Info info;
+    /**是否在获取数据中*/
+    boolean isGetDataing=false;
+    <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember){continue;} %>
+     /** <%= column.Description %>*/
+    private TextView <%=Camel(column.Name) %>Tv;
+      <%}%>  
+       <%if(isCoerceOutImg){%>
+           ImageView <%=Camel(imgName) %>Img;
+           <%} %>
+    	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.act_<%=itemName %>_detail);
+		initView();
+		initTool();
+		initListener();
+        getData();
+	}
+    
+    private void initView() {
+		titleBar = (TitleBar) findViewById(R.id.act_<%=itemName %>_detail_title_bar);
+		titleBar.setTitle("<%=SourceTable.Description%>详情");
+           <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember){continue;} %>
+           <%=Camel(column.Name) %>Tv = (TextView) findViewById(R.id.act_<%=itemName %>_detail_<%=Camel(column.Name) %>_tv);
+              <%}%>  
+           <%if(isCoerceOutImg){%>
+           <%=Camel(imgName) %>Img= (ImageView) findViewById(R.id.act_<%=itemName %>_detail_<%=Camel(imgName) %>_img);
+           <%} %>
+              
+	}
+    private void initTool()
+    {
+    imageLoader=ImageLoader.getInstance();
+    options = ImageLoadTool.imgOptionsInit(options, R.drawable.img_rectangle);
+    }
+    private void initListener()
+    {
+    	titleBar.setLeftClickListener(new TitleOnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onBackPressed();
+			}
+		});
+    	
+    }
+    private void initValue()
+    {
+     <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember){continue;} 
+         if(column.Name==imgName)
+             {%>
+             String imgUrl=info.get<%= GetUpper(imgName) %>();
+         imageLoader.displayImage(imgUrl, <%=Camel(column.Name) %>Img, options,null);
+              <%}else{%>
+             <%=Camel(column.Name) %>Tv.setText(info.get<%=GetUpper(column.Name) %>() <%if(GetJavaTypeUpper(column)!="String"){ %>+""<% }%>);
+           
+        <%}}%>  
+           <%if(isCoerceOutImg){%>
+             String imgUrl=ImgUrlTool.getFullImgUrl(info.get<%= GetUpper(imgName) %>());
+             imageLoader.displayImage(imgUrl, <%=Camel(imgName) %>Img, options,null);
+           <%} %>
+    }
+   
+    public void getData()
+    {
+    if(isGetDataing)
+			return ;
+		isGetDataing=true;
+		 AjaxParams params = new AjaxParams();
+		params.put("fkey", Config.fkey);
+        
+		httpRequestTool.request(Config.api_url+address, params, true,
+				this, "请求中...", new IHttpRequest() {
+					@Override
+					public void callbackOnSuccess(Object t) {
+						isGetDataing=false;
+						RequestResult result = httpRequestTool.responseHander(
+								t, RequestEnum.retNumber);
+						if (result.result == 1) {
+                        info=(MyTaskLowIncomeFamilyInfo)result.resultObj;
+                             initValue();
+						} else {
+							CustomToast.ToastError(<%= ActivityName %>DetailAct.this, "请求失败");
+						}
+					}
+					@Override
+					public void callbackOnFailure() {
+						isGetDataing=false;
+					}
+				});
+    }
+    
+   	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+	}
+	
+    
+}
+      
+     
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

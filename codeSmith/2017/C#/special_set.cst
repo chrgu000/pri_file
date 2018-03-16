@@ -1,0 +1,72 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+  <%   
+ColumnSchema primaryCol=null;
+foreach (ColumnSchema col in SourceTable.Columns ){
+    if(col.IsPrimaryKeyMember){
+    primaryCol= col; 
+    }
+}
+%>
+public   <%=SourceTable.Name %>Info   GetMode(String id)
+{
+
+        <%=SourceTable.Name %>Info info=null;
+         DbCommand sqlStringCommand = this.database.GetSqlStringCommand("SELECT * from <%=SourceTable.Name %> where <%=primaryCol.Name %>=@id");
+            this.database.AddInParameter(sqlStringCommand, "id", DbType.<%=GetCSTypeUpper(primaryCol)%>, id);
+            using (IDataReader reader = this.database.ExecuteReader(sqlStringCommand))
+            {
+                
+            while (reader.Read())
+                {
+                     info = new <%=SourceTable.Name %>Info();
+                    
+        <% for(int i=0;i<SourceTable.Columns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+                if (reader["<%= column.Name %>"]!=DBNull.Value)
+                info.<%= column.Name %> = (<%= GetCSType(column)%>)reader["<%= column.Name %>"];
+				<% } %>
+            
+            
+            
+            
+            
+            
+            
+                return info;
+            }
+
+}
+
+
+<!-- #include file="ScriptTemplate.cst" -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

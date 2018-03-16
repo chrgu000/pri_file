@@ -1,0 +1,156 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="ActivityName" Type="System.String" Category="Strings" Description="实体名称" %>
+<%@ Property Name="itemName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="createXmlName" Type="System.String" Category="Strings" Description="item名称" %>
+<%@ Property Name="mainXmlName" Type="System.String" Category="Strings" Description="主页面名称" %>
+<%@ Property Name="imgName" Type="System.String" Category="Strings" Description="图片列" %>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+
+package com.hxyc.ui.help;
+
+import java.util.List;
+
+import myenum.RequestEnum;
+import net.tsz.afinal.http.AjaxParams;
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Button;
+import android.widget.EditText;
+
+import com.hxyc.activity.BaseActivity;
+import com.hxyc.app.R;
+import com.hxyc.bean.<%= ActivityName  %>Info;
+import com.hxyc.bean.RequestResult;
+import com.hxyc.config.Config;
+import com.hxyc.interfaces.IHttpRequest;
+import com.hxyc.interfaces.TitleOnClickListener;
+import com.hxyc.pulltorefresh.PullToRefreshListView;
+import com.hxyc.pulltorefresh.PullToRefreshBase.OnRefreshListener;
+import com.hxyc.ui.adapter.HelpLogListAdapter;
+import com.hxyc.ui.adapter.MyTaskAdapter;
+import com.hxyc.util.HttpRequestTool;
+import com.hxyc.views.CustomToast;
+import com.hxyc.widget.TitleBar;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
+
+/**
+ * 
+ * @description <%= SourceTable.Description  %>添加
+ * @author 
+ * @date 
+ */
+public class <%= ActivityName %>AddAct extends BaseActivity {
+
+	TitleBar titleBar;
+	/**
+	 * 
+	 */
+	public static final String address = "address";
+
+	HttpRequestTool<<%= ActivityName  %>Info> httpRequestTool = new HttpRequestTool<<%= ActivityName  %>Info>();
+
+    Button subBtn;
+    boolean isSubmit=false;
+    <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember||isContinue(column)){continue;} %>
+     /** <%= column.Description %>*/
+    private EditText <%=Camel(column.Name) %>Edit;
+      <%}%>  
+    	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.act_<%=itemName %>_add);
+		initView();
+		initTool();
+		initListener();
+	}
+    
+    private void initView() {
+		titleBar = (TitleBar) findViewById(R.id.act_<%=itemName %>_add_title_bar);
+		titleBar.setTitle("<%=SourceTable.Description%>添加");
+        subBtn= (Button) findViewById(R.id.act_<%=itemName %>_add_btn);
+           <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember||isContinue(column)){continue;} %>
+           <%=Camel(column.Name) %>Edit = (EditText) findViewById(R.id.act_<%=itemName %>_add_<%=Camel(column.Name) %>_edit);
+              <%}%>    
+              
+	}
+    private void initTool()
+    {
+    }
+    private void initListener()
+    {
+    	titleBar.setLeftClickListener(new TitleOnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onBackPressed();
+			}
+		});
+    	subBtn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				submit();
+			}
+		});
+    }
+    public void submit()
+    {
+
+              <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember||isContinue(column)){continue;} %>
+		String <%=Camel(column.Name) %>Str=<%=Camel(column.Name) %>Edit.getText().toString();
+          <%}%>   
+           <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember||isContinue(column)){continue;} %>
+		if(<%=Camel(column.Name) %>Str.trim().length()==0)
+		{
+			CustomToast.ToastError(this,"请输入<%=column.Description%>内容！");
+			return ;
+		}
+		
+         <%}%>  
+		 AjaxParams params = new AjaxParams();
+		params.put("fkey", Config.fkey);
+        
+         <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember||isContinue(column)){continue;} %>
+           	params.put("<%=column.Name %>", <%=Camel(column.Name) %>Str);
+              <%}%>   
+                  if(isSubmit)
+			return ;
+		isSubmit=true;
+		httpRequestTool.request(Config.api_url+address, params, true,
+				this, "提交中...", new IHttpRequest() {
+					@Override
+					public void callbackOnSuccess(Object t) {
+						isSubmit=false;
+						RequestResult result = httpRequestTool.responseHander(
+								t, RequestEnum.retNumber);
+						if (result.result == 1) {
+						} else {
+							CustomToast.ToastError(<%= ActivityName %>AddAct.this, "提交失败");
+						}
+					}
+					@Override
+					public void callbackOnFailure() {
+						isSubmit=false;
+					}
+				});
+    }
+}
+      
+     
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

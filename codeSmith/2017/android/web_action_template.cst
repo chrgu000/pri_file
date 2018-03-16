@@ -1,0 +1,347 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="ActivityName" Type="System.String" Category="Strings" Description="实体名称" Default="sss"
+%>
+<%@ Property Name="createXmlName" Type="System.String" Category="Strings" Description="item名称" Default="ssss"
+%>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" Default="111"
+%>
+<%@ Property Name="imgName" Type="System.String" Category="Strings" Description="图片列" Default="111"
+%>
+<%@ Property Name="isCoerceOutImg" Type="System.Boolean" Category="Strings" Description="强制输出图片列" %>
+<%@ Property Name="itemName" Type="System.String" Category="Strings" Description="item名称" Default="sss"
+%>
+
+<%@ Property Name="mainXmlName" Type="System.String" Category="Strings" Description="主页面名称" Default="sss"
+%>
+<%@ Property Name="bussiPackage" Type="System.String" Category="Strings" Description="com头" Default="com.jeecg" %>
+<%@ Property Name="entityPackage" Type="System.String" Category="Strings" Description="package后"  Default="sss" %>
+
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+
+
+package <%=bussiPackage%>.controller.<%=entityPackage%>;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.jeecgframework.core.common.controller.BaseController;
+import org.jeecgframework.core.common.exception.BusinessException;
+import org.jeecgframework.core.common.hibernate.qbc.CriteriaQuery;
+import org.jeecgframework.core.common.model.json.DataGrid;
+import org.jeecgframework.core.constant.Globals;
+import org.jeecgframework.core.entity.AjaxJson;
+import org.jeecgframework.core.util.AjaxReturnTool;
+import org.jeecgframework.core.util.TokenVerifyTool;
+import org.jeecgframework.web.system.service.SystemService;
+import org.jeecgframework.core.util.MyBeanUtils;
+
+
+
+
+import <%=bussiPackage%>.entity.<%=entityPackage%>.<%= del_HeadUpper(SourceTable.Name)%>Entity;
+import <%=bussiPackage%>.service.<%=entityPackage%>.<%= del_HeadUpper(SourceTable.Name)%>ServiceI;
+
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.http.HttpStatus;
+import org.jeecgframework.core.beanvalidator.BeanValidators;
+
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+
+import java.io.Serializable;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.util.UriComponentsBuilder;
+
+
+/**   
+ * @Title: Controller
+ * @Description: <%= SourceTable.Description  %>
+ * @author zhangdaihao
+ * @date <%= System.DateTime.Now %>
+ * @version V1.0   
+ *
+ */
+@Controller
+@RequestMapping("/api<%= del_HeadUpper(SourceTable.Name)%>Ctrl")
+public class Api<%= del_HeadUpper(SourceTable.Name)%>Controller extends BaseController {
+	/**
+	 * Logger for this class
+	 */
+	private static final Logger logger = Logger.getLogger(Api<%= del_HeadUpper(SourceTable.Name)%>Controller.class);
+
+	@Autowired
+	private <%= del_HeadUpper(SourceTable.Name)%>ServiceI <%= del_Table(SourceTable.Name)%>Service;
+	@Autowired
+	private SystemService systemService;
+	@Autowired
+	private Validator validator;
+
+	
+	/**
+	 * AJAX请求数据
+	 * 
+	 * @param request
+	 * @param response
+	 * @param dataGrid
+	 * @param user
+	 */
+
+	@RequestMapping(params = "datagrid")
+	@ResponseBody
+	public Object datagrid(<%= del_HeadUpper(SourceTable.Name)%>Entity <%= del_Table(SourceTable.Name)%>,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+		if(TokenVerifyTool.verify(request))
+			return AjaxReturnTool.emptyKey();
+		dataGrid.setField("<%foreach(ColumnSchema column in SourceTable.Columns){%><%= jeecg_Column_Camel(column.Name)%>,<%}  %>");
+		dataGrid.setSort("createDate");
+        CriteriaQuery cq = new CriteriaQuery(<%= del_HeadUpper(SourceTable.Name)%>Entity.class, dataGrid);
+		//查询条件组装器
+		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, <%= del_Table(SourceTable.Name)%>, request.getParameterMap());
+		try{
+			//自定义追加查询条件
+		}catch (Exception e) {
+			throw new BusinessException(e.getMessage());
+		}
+		cq.add();
+		this.<%= del_Table(SourceTable.Name)%>Service.getDataGridReturn(cq, true);
+		return AjaxReturnTool.retJsonp(
+				AjaxReturnTool.hanlderPage(dataGrid), request);
+	}
+
+	/**
+	 * <%= del_HeadUpper(SourceTable.Description)%>类型
+	 * 
+	 * @return
+	 */
+	@RequestMapping(params = "doDel")
+	@ResponseBody
+	public Object doDel(<%= del_HeadUpper(SourceTable.Name)%>Entity <%= del_Table(SourceTable.Name)%>, HttpServletRequest request) {
+		if(TokenVerifyTool.verify(request))
+		{
+			return AjaxReturnTool.emptyKey();
+		}
+		String message = null;
+		AjaxJson j = new AjaxJson();
+		<%= del_Table(SourceTable.Name)%> = systemService.getEntity(<%= del_HeadUpper(SourceTable.Name)%>Entity.class, <%= del_Table(SourceTable.Name)%>.getId());
+		message = "<%= del_HeadUpper(SourceTable.Description)%>删除成功";
+		try{
+			<%= del_Table(SourceTable.Name)%>Service.delete(<%= del_Table(SourceTable.Name)%>);
+			systemService.addLog(message, Globals.Log_Type_DEL, Globals.Log_Leavel_INFO);
+			j.setResult(1);
+		}catch(Exception e){
+			e.printStackTrace();
+			message = "<%= del_HeadUpper(SourceTable.Description)%>删除失败";
+			j.setResult(3);
+			throw new BusinessException(e.getMessage());
+		}
+		j.setMsg(message);
+	    return AjaxReturnTool.retJsonp(j, request);
+	}
+
+	/**
+	 * 批量删除<%= del_HeadUpper(SourceTable.Description)%>
+	 * 
+	 * @return
+	 */
+	@RequestMapping(params = "doBatchDel")
+	@ResponseBody
+	public Object doBatchDel(String ids,HttpServletRequest request){
+		if(TokenVerifyTool.verify(request))
+			return AjaxReturnTool.emptyKey();
+		String message = null;
+		AjaxJson j = new AjaxJson();
+		message = "<%= del_HeadUpper(SourceTable.Description)%>删除成功";
+		try{
+			for(String id:ids.split(",")){
+				<%= del_HeadUpper(SourceTable.Name)%>Entity <%= del_Table(SourceTable.Name)%> = systemService.getEntity(<%= del_HeadUpper(SourceTable.Name)%>Entity.class, 
+						id
+						);
+				<%= del_Table(SourceTable.Name)%>Service.delete(<%= del_Table(SourceTable.Name)%>);
+				systemService.addLog(message, Globals.Log_Type_DEL, Globals.Log_Leavel_INFO);
+			}
+			j.setResult(1);
+		}catch(Exception e){
+			e.printStackTrace();
+			message = "<%= del_HeadUpper(SourceTable.Description)%>删除失败";
+			j.setResult(3);
+			throw new BusinessException(e.getMessage());
+		}
+		j.setMsg(message);
+		return AjaxReturnTool.retJsonp(j, request);
+	}
+
+
+	/**
+	 * 添加礼金类型
+	 * 
+	 * @param ids
+	 * @return
+	 */
+	@RequestMapping(params = "doAdd")
+	@ResponseBody
+	public Object doAdd(<%= del_HeadUpper(SourceTable.Name)%>Entity <%= del_Table(SourceTable.Name)%>, HttpServletRequest request) {
+		if(TokenVerifyTool.verify(request))
+			return AjaxReturnTool.emptyKey();
+		String message = null;
+		AjaxJson j = new AjaxJson();
+		message = "<%= del_HeadUpper(SourceTable.Description)%>添加成功";
+		try{
+		Serializable  obj=	<%= del_Table(SourceTable.Name)%>Service.save(<%= del_Table(SourceTable.Name)%>);
+			systemService.addLog(message, Globals.Log_Type_INSERT, Globals.Log_Leavel_INFO);
+			if(obj==null)
+				j.setResult(0);
+			else
+			{
+				j.setObj(obj);
+				j.setResult(1);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			message = "<%= del_HeadUpper(SourceTable.Description)%>添加失败";
+			j.setResult(3);
+			throw new BusinessException(e.getMessage());
+		}
+		j.setMsg(message);
+		return AjaxReturnTool.retJsonp(j, request);
+	}
+
+	/**
+	 * 更新礼金类型
+	 * 
+	 * @param ids
+	 * @return
+	 */
+	@RequestMapping(params = "doUpdate")
+	@ResponseBody
+	public Object doUpdate(<%= del_HeadUpper(SourceTable.Name)%>Entity <%= del_Table(SourceTable.Name)%>, HttpServletRequest request) {
+		if(TokenVerifyTool.verify(request))
+			return AjaxReturnTool.emptyKey();
+		String message = null;
+		AjaxJson j = new AjaxJson();
+		message = "<%= del_HeadUpper(SourceTable.Description)%>更新成功";
+		<%= del_HeadUpper(SourceTable.Name)%>Entity t = <%= del_Table(SourceTable.Name)%>Service.get(<%= del_HeadUpper(SourceTable.Name)%>Entity.class, <%= del_Table(SourceTable.Name)%>.getId());
+		try {
+			MyBeanUtils.copyBeanNotNull2Bean(<%= del_Table(SourceTable.Name)%>, t);
+			<%= del_Table(SourceTable.Name)%>Service.saveOrUpdate(t);
+			systemService.addLog(message, Globals.Log_Type_UPDATE, Globals.Log_Leavel_INFO);
+			j.setResult(1);
+		} catch (Exception e) {
+			e.printStackTrace();
+			message = "<%= del_HeadUpper(SourceTable.Description)%>更新失败";
+			j.setResult(3);
+			throw new BusinessException(e.getMessage());
+		}
+		j.setMsg(message);
+		return AjaxReturnTool.retJsonp(j, request);
+	}
+
+
+	
+
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.POST)
+	@ResponseBody
+	public Object get(@PathVariable("id") String id,HttpServletRequest request) {
+		if(TokenVerifyTool.verify(request))
+			return AjaxReturnTool.emptyKey();
+		AjaxJson j=new AjaxJson();
+		<%= del_HeadUpper(SourceTable.Name)%>Entity task = <%= del_Table(SourceTable.Name)%>Service.get(<%= del_HeadUpper(SourceTable.Name)%>Entity.class, id);
+		if (task == null) {
+			j.setResult(2);
+		}
+		else {
+			j.setObj(task);
+			j.setResult(1);
+		}
+		return AjaxReturnTool.retJsonp(j, request);
+	}
+
+	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public Object create(@RequestBody <%= del_HeadUpper(SourceTable.Name)%>Entity <%= del_Table(SourceTable.Name)%>, UriComponentsBuilder uriBuilder
+			,HttpServletRequest request) {
+		if(TokenVerifyTool.verify(request))
+			return AjaxReturnTool.emptyKey();
+		AjaxJson j=new AjaxJson();
+		//调用JSR303 Bean Validator进行校验，如果出错返回含400错误码及json格式的错误信息.
+		Set<ConstraintViolation<<%= del_HeadUpper(SourceTable.Name)%>Entity>> failures = validator.validate(<%= del_Table(SourceTable.Name)%>);
+		if (!failures.isEmpty()) {
+			j.setResult(1);
+		}
+
+		//保存
+		try{
+			<%= del_Table(SourceTable.Name)%>Service.save(<%= del_Table(SourceTable.Name)%>);
+		} catch (Exception e) {
+			e.printStackTrace();
+			j.setResult(3);
+		}
+		//按照Restful风格约定，创建指向新任务的url, 也可以直接返回id或对象.
+		String id = <%= del_Table(SourceTable.Name)%>.getId();
+
+		return AjaxReturnTool.retJsonp(j, request);
+	}
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> update(@RequestBody <%= del_HeadUpper(SourceTable.Name)%>Entity <%= del_Table(SourceTable.Name)%>) {
+		//调用JSR303 Bean Validator进行校验，如果出错返回含400错误码及json格式的错误信息.
+		Set<ConstraintViolation<<%= del_HeadUpper(SourceTable.Name)%>Entity>> failures = validator.validate(<%= del_Table(SourceTable.Name)%>);
+		if (!failures.isEmpty()) {
+			return new ResponseEntity(BeanValidators.extractPropertyAndMessage(failures), HttpStatus.BAD_REQUEST);
+		}
+
+		//保存
+		try{
+			<%= del_Table(SourceTable.Name)%>Service.saveOrUpdate(<%= del_Table(SourceTable.Name)%>);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity(HttpStatus.NO_CONTENT);
+		}
+
+		//按Restful约定，返回204状态码, 无内容. 也可以返回200状态码.
+		return new ResponseEntity(HttpStatus.NO_CONTENT);
+	}
+	@RequestMapping(params = "delete",value = "/{id}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public Object delete(@PathVariable("id") String id
+			,HttpServletRequest request) {
+		if(TokenVerifyTool.verify(request))
+			return AjaxReturnTool.emptyKey();
+		AjaxJson json=new AjaxJson();
+		try {
+			<%= del_Table(SourceTable.Name)%>Service.deleteEntityById(<%= del_HeadUpper(SourceTable.Name)%>Entity.class, id);
+			json.setResult(1);
+			json.setMsg("删除成功！");
+		} catch (Exception e) {
+			e.printStackTrace();
+			json.setResult(3);
+			json.setMsg("删除发生异常！");
+		}
+		return AjaxReturnTool.retJsonp(json, request);
+	}
+}
+
+
+
+
+     
+<!-- #include file="ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

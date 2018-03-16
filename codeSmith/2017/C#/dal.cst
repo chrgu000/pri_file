@@ -1,0 +1,242 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Data;
+using System.Data.SqlClient;
+
+namespace <%=nameSpace%>.DAL  
+{
+    public class <%=GetUpper(getT_Table(SourceTable.Name))%>DAL
+    {
+        IntelligencizeDBHELP db = new IntelligencizeDBHELP();
+        #region Add
+        public int Add(<%= GetUpper(getT_Table(SourceTable.Name))%> mode)
+        {
+			 //string sql = "up_<%= SourceTable.Database.Name %>_<%= SourceTable.Name %>_add";
+			
+			StringBuilder sb = new StringBuilder();
+            sb.Append("insert into <%=SourceTable.Name%>(");
+			<% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				sb.Append("[<%= column.Name %>],");
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("[<%= column.Name %>]");
+				<% } %>
+				sb.Append(") values (");
+				<% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				sb.Append("@<%= column.Name %>,");
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("@<%= column.Name %>");
+				<% } %>
+				sb.Append(")");
+				
+			SqlParameter[] pa = new SqlParameter[] 
+            {
+				<% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				new SqlParameter("@<%= column.Name %>", mode.<%= GetUpper(column.Name )%>),
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				new SqlParameter("@<%= column.Name %>", mode.<%= GetUpper(column.Name )%>)
+				<% } %>
+            };
+            return db.ExecInt(sb.ToString(),pa,CommandType.Text);
+        }
+
+
+        #endregion
+
+	
+        #region del
+        public int Del(<%= GetUpper(getT_Table(SourceTable.Name))%> mode)
+        {
+            string sql = @"delete from <%= SourceTable.Name%> where  <% foreach (ColumnSchema col in SourceTable.Columns ){if(col.IsPrimaryKeyMember){%><%= col.Name %>='" + mode.<%= GetUpper(col.Name) %> +"' " <%}} %> ;
+			int ret=db.ExecInt(sql);
+			if(ret>0&&ret!=AppConstantResult.jsonError)
+			{
+			ret=1;
+			}
+            return ret;
+        }
+
+        #endregion
+        #region update
+        public int Update(<%=GetUpper(getT_Table(SourceTable.Name) )%> mode)
+        {
+	StringBuilder sb = new StringBuilder();
+            sb.Append("update  <%=GetUpper( SourceTable.Name )%> set ");
+			<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("[<%= column.Name %>]=@<%= column.Name %>,");
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("[<%= column.Name %>]=@<%= column.Name %> ");
+				<% } %>
+				
+				sb.Append("where <% foreach (ColumnSchema col in SourceTable.Columns ){if(col.IsPrimaryKeyMember){%><%=col.Name %> <%}} %>=@Id");
+				
+			SqlParameter[] pa = new SqlParameter[] 
+            {
+				<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				new SqlParameter("@<%= column.Name %>", mode.<%=GetUpper( column.Name) %>),
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				new SqlParameter("@<%= column.Name %>", mode.<%=GetUpper( column.Name) %>),
+				
+					new SqlParameter("@Id", mode.<% foreach (ColumnSchema col in SourceTable.Columns ){if(col.IsPrimaryKeyMember){%><%= GetUpper(col.Name) %> <%}} %> )
+				<% } %>
+				
+            };
+			int ret=db.ExecInt(sb.ToString(), pa, CommandType.Text);
+			if(ret>0&&ret!=AppConstantResult.jsonError)
+			{
+			ret=1;
+			}
+            return ret;
+        }
+  	
+
+
+
+        #endregion
+        #region select
+      
+		
+
+        public string GetStr(<%= GetUpper(getT_Table(SourceTable.Name))%> mode)
+        {
+            string sql = @"select Count(*) from <%=GetUpper( SourceTable.Name )%> where <% foreach (ColumnSchema col in SourceTable.Columns ){if(col.IsPrimaryKeyMember){%><%= col.Name %>=" + mode.<%=GetUpper( col.Name) %> <%}} %> ;
+          
+            return db.GetFirst(sql);
+        }
+        #endregion
+		
+		#region paging
+        /// <summary>
+        /// 分页存储过程
+        /// </summary>
+        /// <param name="sqlstr">查询字符串</param>
+        /// <param name="size">显示的行数</param>
+        /// <param name="index">第几页</param>
+		/// <returns>object是list对象，count是总页数</returns>
+        public ObjectAndCount PageStoredProcedure(string searchColumn,string sqlWhereStr,
+		int size, int index, string orderColumn, string orderType,string startDate)
+        {
+            IntelligencizeDBHELP db = new IntelligencizeDBHELP();
+			 string procStr = "up_OE_GetRecBySql_out]";
+		 	 SqlParameter[] sp = new SqlParameter[]
+            {
+			new SqlParameter("@searchColumn,searchColumn),
+			new SqlParameter("@sqlWhereStr,sqlWhereStr),
+			new SqlParameter("@tableName,<%=GetUpper( SourceTable.Name )%>),
+			new SqlParameter("@pageSize,pageSize),
+			new SqlParameter("@pageIndex,pageIndex),
+			new SqlParameter("@orderColumn,orderColumn),
+			new SqlParameter("@orderType,orderType),
+			new SqlParameter("@PK_name,"id")
+            };
+            ObjectAndCount oac = db.ExcPageStoredProcedure<UsedGoodsView>(procStr, sp, orderColumn, startDate);
+			return oac;
+
+        } 
+        #endregion
+		
+		
+		
+    }
+}
+
+
+<script runat="template">
+// My methods here.
+public string GetUpper(string str)
+{
+	str=str.Substring(0,1).ToUpper()+str.Substring(1);
+	return str;
+}
+public string getT_Table(string str)
+{
+	return str+"Info";
+}
+
+public string GetCSType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "string";
+		case DbType.AnsiStringFixedLength: return "string";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "bool";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "decimal";
+		case DbType.Date: return "DateTime";
+		case DbType.DateTime: return "DateTime";
+		case DbType.Decimal: return "decimal";
+		case DbType.Double: return "double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "int";
+		case DbType.Int64: return "long";
+		case DbType.Object: return "object";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "float";
+		case DbType.String: return "string";
+		case DbType.StringFixedLength: return "string";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "decimal";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+</script>

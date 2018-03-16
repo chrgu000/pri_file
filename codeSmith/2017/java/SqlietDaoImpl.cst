@@ -1,0 +1,159 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="NSPostfix" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpacePostfix" %>
+
+package com.example.spark_2.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.spark_2.model.<%=SourceTable.Name%>;
+
+import android.database.sqlite.SQLiteDatabase;
+
+    public interface <%=SourceTable.Name%>Impl  
+    {
+	public void CreateTable() ;
+ public List<<%=SourceTable.Name%>> GetSeedItem(String _where,Integer page,Integer size) ;
+
+	 public <%=SourceTable.Name%> GetItem(String id) ;
+
+	public void dropTable();
+
+public void insertItem(<%=SourceTable.Name%> entity );
+
+ public int update(<%=SourceTable.Name%> entity,String _where,String id);
+
+}
+
+
+<script runat="template">
+// My methods here.
+
+public string GetCSType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "String";
+		case DbType.AnsiStringFixedLength: return "String";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "Boolean";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "Double";
+		case DbType.Date: return "Date";
+		case DbType.DateTime: return "Date";
+		case DbType.Decimal: return "Double";
+		case DbType.Double: return "Double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "Integer";
+		case DbType.Int64: return "Long";
+		case DbType.Object: return "String";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "Float";
+		case DbType.String: return "String";
+		case DbType.StringFixedLength: return "String";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "Double";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+//GetItem中使用
+public string GetJavaModeType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "String";
+		case DbType.AnsiStringFixedLength: return "String";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "Boolean";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "Double";
+		case DbType.Date: return "Date";
+		case DbType.DateTime: return "Date";
+		case DbType.Decimal: return "Double";
+		case DbType.Double: return "Double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "Int";
+		case DbType.Int64: return "Long";
+		case DbType.Object: return "String";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "Float";
+		case DbType.String: return "String";
+		case DbType.StringFixedLength: return "String";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "Double";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+
+
+
+
+public string GetSqlietType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "text";
+		case DbType.AnsiStringFixedLength: return "text";
+		case DbType.Binary: return "blob";
+		case DbType.Boolean: return "bool";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "text";
+		case DbType.Date: return "text";
+		case DbType.DateTime: return "text";
+		case DbType.Decimal: return "text";
+		case DbType.Double: return "text";
+		case DbType.Guid: return "text";
+		case DbType.Int16: return "text";
+		case DbType.Int32: return "text";
+		case DbType.Int64: return "text";
+		case DbType.Object: return "text";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "text";
+		case DbType.String: return "text";
+		case DbType.StringFixedLength: return "text";
+		case DbType.Time: return "text";
+		case DbType.UInt16: return "text";
+		case DbType.UInt32: return "text";
+		case DbType.UInt64: return "text";
+		case DbType.VarNumeric: return "text";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+</script>
