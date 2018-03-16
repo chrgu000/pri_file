@@ -1,0 +1,230 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="nameSpace" Optional="true" Category="Strings" Description="nameSpace" %>
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Data;
+using System.Data.OleDb;
+namespace <%=nameSpace%>
+{
+    public class <%=SourceTable.Name%>DAL
+    {
+        DBHELP db = new DBHELP();
+        #region Add
+        public int Add(<%=SourceTable.Name%> model)
+        {
+           
+          
+			 //string sql = "up_<%= SourceTable.Database.Name %>_<%= SourceTable.Name %>_add";
+			
+			StringBuilder sb = new StringBuilder();
+            sb.Append("insert into <%=SourceTable.Name%>(");
+			<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("<%= column.Name %>,");
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("<%= column.Name %>");
+				<% } %>
+				sb.Append(") values (");
+				<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("@<%= column.Name %>,");
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("@<%= column.Name %>");
+				<% } %>
+				sb.Append(")");
+				
+			OleDbParameter[] pa = new OleDbParameter[] 
+            {
+				<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				new OleDbParameter("@<%= column.Name %>", model.<%= column.Name %>),
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				new OleDbParameter("@<%= column.Name %>", model.<%= column.Name %>)
+				<% } %>
+				
+            };
+			
+            return db.ExecInt(sb.ToString(),pa,CommandType.Text);
+        }
+
+
+        #endregion
+     
+        #region del
+        public int Del(<%=SourceTable.Name%> model)
+        {
+            string sql = @"delete from <%=SourceTable.Name%> where Id=" + model.id;
+
+            return db.ExecInt(sql);
+        }
+
+        #endregion
+        #region update
+        public int Update(<%=SourceTable.Name%> model)
+        {
+	StringBuilder sb = new StringBuilder();
+            sb.Append("update  <%=SourceTable.Name%> set ");
+			<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("<%= column.Name %>=@<%= column.Name %>,");
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				sb.Append("<%= column.Name %>=@<%= column.Name %> ");
+				<% } %>
+				
+				sb.Append("where Id=@ID");
+				
+			OleDbParameter[] pa = new OleDbParameter[] 
+            {
+				<% for(int i=0;i<SourceTable.NonPrimaryKeyColumns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				new OleDbParameter("@<%= column.Name %>", model.<%= column.Name %>),
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				new OleDbParameter("@<%= column.Name %>", model.<%= column.Name %>),
+					new OleDbParameter("@Id", model.id),
+				<% } %>
+				
+            };
+            return db.ExecInt(sb.ToString(), pa, CommandType.Text);
+        }
+
+        #endregion
+        #region select
+        public List<<%=SourceTable.Name%>> GetList()
+        {
+            string sql = @"select * from <%=SourceTable.Name%>";
+            string[] strs ={            
+            
+			<% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				"<%= column.Name %>",
+				<% } %>
+                
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				"<%= column.Name %>"
+				<% } %>
+			};
+            return db.GetT<<%=SourceTable.Name%>>(sql,strs);
+        }
+        public <%=SourceTable.Name%> GetModel(int id)
+        {
+            string sql = @"select * from <%=SourceTable.Name%> where Id= " + id;
+            string[] strs ={ 
+			<% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				"<%= column.Name %>",
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				"<%= column.Name %>"
+				<% } %>};
+       
+            return db.GetT<<%=SourceTable.Name%>>(sql, strs)[0];
+
+
+        }
+
+        public string GetStr(<%=SourceTable.Name%> model)
+        {
+            string sql = @"select Count(*) from <%=SourceTable.Name%> where Id= " + model.id;
+          
+            return db.GetFirst(sql);
+        }
+
+
+        #endregion
+    }
+}
+
+
+<script runat="template">
+// My methods here.
+
+public string GetCSType(ColumnSchema column)
+{
+	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	
+	switch (column.DataType)
+	{
+		case DbType.AnsiString: return "string";
+		case DbType.AnsiStringFixedLength: return "string";
+		case DbType.Binary: return "byte[]";
+		case DbType.Boolean: return "bool";
+		case DbType.Byte: return "byte";
+		case DbType.Currency: return "decimal";
+		case DbType.Date: return "DateTime";
+		case DbType.DateTime: return "DateTime";
+		case DbType.Decimal: return "decimal";
+		case DbType.Double: return "double";
+		case DbType.Guid: return "Guid";
+		case DbType.Int16: return "short";
+		case DbType.Int32: return "int";
+		case DbType.Int64: return "long";
+		case DbType.Object: return "object";
+		case DbType.SByte: return "sbyte";
+		case DbType.Single: return "float";
+		case DbType.String: return "string";
+		case DbType.StringFixedLength: return "string";
+		case DbType.Time: return "TimeSpan";
+		case DbType.UInt16: return "ushort";
+		case DbType.UInt32: return "uint";
+		case DbType.UInt64: return "ulong";
+		case DbType.VarNumeric: return "decimal";
+		default:
+		{
+			return "__UNKNOWN__" + column.NativeType;
+		}
+	}
+}
+</script>
