@@ -1,0 +1,113 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.service;
+
+import <%=nameSpace %>.bean.<%=GetUpper(SourceTable.Name)%>Entity;
+import <%=nameSpace %>.tool.dao_util.PageBean;
+
+import java.util.List;
+import java.util.TreeMap;
+
+/**
+  * @类描述:<%=SourceTable.Description %>
+ * @类名称:<%=SourceTable.Name%>Service
+ * @创建人:  
+ * @创建时间:<%=DateTime.Now %> 
+ * @修改人:  
+ * @修改时间:
+ * @修改备注: 
+ */
+  public interface <%=GetUpper(SourceTable.Name)%>Service {
+  <%=GetUpper(SourceTable.Name)%>Entity save(<%=GetUpper(SourceTable.Name)%>Entity entity,String userId);
+
+    /**
+     * 修改实体所有属性
+     * @return
+     */
+    <%=GetUpper(SourceTable.Name)%>Entity update(<%=GetUpper(SourceTable.Name)%>Entity entity,String userId);
+
+    /**
+     * 修改实体某些属性
+     * @param entity
+     * @return
+     */
+    <%=GetUpper(SourceTable.Name)%>Entity updateWhere(<%=GetUpper(SourceTable.Name)%>Entity entity,String userId);
+    /**
+     * 软删除
+     * deleteStatus，1=删除 ,0=正常
+     */
+      int deleteToUpdateStatus(String id,String userId);
+    /**
+     * 激活一条信息
+     * deleteStatus，1=删除 ,0=正常
+     */
+      int activationToUpdateStatus(String id,String userId);
+
+    /**
+     * 判断属性是否存在
+     * @param wheresAndValues  查询列 查询值
+     * @return -1=没有值，0=不存在，1=存在
+     */
+    int  isExistsProperty(TreeMap<String,Object> wheresAndValues,String userId);
+    /**
+     * 查询实体对象
+     * @param id
+     * @return
+     */
+      <%=GetUpper(SourceTable.Name)%>Entity getOne(String id,String userId);
+
+    /**
+     * 查询实体对象
+     * @param wheresAndValues  查询列 查询值
+     * @return
+     */
+     <%=GetUpper(SourceTable.Name)%>Entity getOne(TreeMap<String,Object> wheresAndValues,String userId);
+
+    List<<%=GetUpper(SourceTable.Name)%>Entity> findAll(TreeMap<String,Object> wheresAndValues,String userId) ;
+
+    List<<%=GetUpper(SourceTable.Name)%>Entity> findAll(String userId);
+
+    /**
+     * 查询分页，根据查询条件
+     * @param wheresAndValues 查询条件
+     * @param queryDate  查询开始时间，数据创建时间long类型，精度到微秒，大于数据的创建时间开始查询
+     *                    queryDate 防止用户访问数据时，数据有变动
+     * @param count 查询条数
+     * @return
+     */
+    PageBean pageList(TreeMap<String,Object> wheresAndValues, Long queryDate, Integer count, String userId) ;
+
+    /**
+     * 查询分页，根据查询条件
+     * @param wheresAndValues 查询条件
+     * @param queryDate  查询开始时间，数据创建时间long类型，精度到微秒，大于数据的创建时间开始查询
+     *                   queryDate 防止用户访问数据时，数据有变动
+     * @param page 查询开始页数
+     * @param count 查询条数
+     * @return
+     */
+    PageBean pageList(TreeMap<String,Object> wheresAndValues,
+                                           Long queryDate,Integer page, Integer count,String userId);
+    
+    
+}
+
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

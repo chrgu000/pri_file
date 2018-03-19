@@ -1,0 +1,204 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.dao.impl;
+
+import java.util.List;
+import java.util.TreeMap;
+
+import <%=nameSpace %>.tool.dao_util.DaoCommonUtil;
+import <%=nameSpace %>.tool.dao_util.DaoOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import <%=nameSpace %>.bean.<%=GetUpper(SourceTable.Name)%>Entity;
+import org.springframework.stereotype.Repository;
+<% bool isPrint=false;
+string primaryKeyName="";
+ foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name;break; }}
+%>
+
+/**
+ * @类描述:<%=SourceTable.Description %>
+ * @项目名称:
+ * @类名称:<%=SourceTable.Name%>DaoImpl
+ * @创建人:  
+ * @创建时间:<%=DateTime.Now %> 
+ * @修改人:  
+ * @修改时间:
+ * @修改备注: 
+ */
+@Repository
+public class <%=GetUpper(SourceTable.Name)%>DaoImpl implements TestDaoI {
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Override
+    public int save(<%=GetUpper(SourceTable.Name)%>Entity entity) {
+        return jdbcTemplate.update("INSERT INTO <%=SourceTable.Name%>(<% for(int i=0;i<SourceTable.Columns.Count;i++) { if(i+1==SourceTable.Columns.Count){%><%=SourceTable.Columns[i].Name%><%}else {%><%=SourceTable.Columns[i].Name%>,<%}}%>)"
+                        +" VALUES(<% for(int i=0;i<SourceTable.Columns.Count;i++) { if(i+1==SourceTable.Columns.Count){%>?<%}else {%>?,<%}}%>)",
+                        <% for(int i=0;i<SourceTable.Columns.Count;i++) { if(i+1==SourceTable.Columns.Count){%>entity.get<%=GetUpper(SourceTable.Columns[i].Name)%>()<%}else {%>entity.get<%=GetUpper(SourceTable.Columns[i].Name)%>(),<%}}%>);
+    }
+
+    /**
+     * 修改
+     * @return
+     */
+    @Override
+    public int update(<%=GetUpper(SourceTable.Name)%>Entity entity){
+        return jdbcTemplate.update("update <%=SourceTable.Name%> set <% for(int i=0;i<SourceTable.Columns.Count;i++) { if(SourceTable.Columns[i].IsPrimaryKeyMember||isContinue(SourceTable.Columns[i]))continue;else if(i>0&&isPrint){%>,<%} %><%=SourceTable.Columns[i].Name%>=?<% isPrint=true;}%>"
+        +" where   <%= primaryKeyName %> = ? "
+        ,<% isPrint=false; for(int i=0;i<SourceTable.Columns.Count;i++) { if(SourceTable.Columns[i].IsPrimaryKeyMember||isContinue(SourceTable.Columns[i]))continue;else if(i>0&&isPrint){%>,<%} %>entity.get<%=GetUpper(SourceTable.Columns[i].Name)%>()<% isPrint=true;}%>, entity.get<%= GetUpper(primaryKeyName) %>());
+    }
+    /**
+     * 修改
+     * param entity
+     * param columns 需要修改的列
+     * param primaryKey  主键列
+     * @return
+     */
+    @Override
+    public int update(String columns,String primaryKey,Object... args){
+        if(args==null||args.length==0)
+            return 0;
+        StringBuffer sql=new StringBuffer("update <%=SourceTable.Name%> set ");
+        return DaoCommonUtil.updateCom(sql,columns,primaryKey,jdbcTemplate,args);
+    }
+    /**
+     * 修改
+     * param entity
+     * param columns 需要修改的列
+     * param primaryKey  主键列
+     * @return
+     */
+    @Override
+    public int update(<%=GetUpper(SourceTable.Name)%>Entity entity,String[] columns,String primaryKey,int[] argTypes){
+        if(columns==null||columns.length==0)
+            return 0;
+        StringBuffer sql=new StringBuffer("update <%=SourceTable.Name%> set ");
+        return DaoCommonUtil.updateCom(sql,entity,columns,primaryKey,argTypes,jdbcTemplate);
+    }
+    /**
+     * 软删除
+     * deleteStatus，1=删除 ,0=正常
+     */
+    @Override
+    public int deleteToUpdateStatus(String id) {
+        return jdbcTemplate.update("UPDATE <%=SourceTable.Name%> SET "+DaoCommonUtil.DEL_STATUS_NAME+"="+DaoCommonUtil.STATUS_DEL+
+                " WHERE "+DaoCommonUtil.PRIMARY_NAME+"=?", id);
+    }
+    /**
+     * 激活一条信息
+     * deleteStatus，1=删除 ,0=正常
+     */
+    @Override
+    public int activationToUpdateStatus(String id) {
+        return jdbcTemplate.update("UPDATE <%=SourceTable.Name%> SET "+DaoCommonUtil.DEL_STATUS_NAME+"="+DaoCommonUtil.STATUS_ACTIVATION+
+                " WHERE "+DaoCommonUtil.PRIMARY_NAME+"=?", id);
+    }
+    /**
+     * 删除
+     */
+    @Override
+    public int delete(String id) {
+        return jdbcTemplate.update("DELETE FROM <%=SourceTable.Name%> WHERE "+DaoCommonUtil.PRIMARY_NAME+"=?", id);
+    }
+
+    /**
+     * 判断属性是否存在
+     * @param wheresAndValues  查询列 查询值
+     * @return -1=没有值，0=不存在，1=存在
+     */
+    @Override
+    public Long  isExistsProperty(TreeMap<String,Object> wheresAndValues)
+    {
+        if(wheresAndValues==null||wheresAndValues.size()==0)
+            return -1l;
+        StringBuffer sql =new StringBuffer( "SELECT count(1) FROM <%=SourceTable.Name%> WHERE 1=1 ");
+        return  DaoCommonUtil.isExistsProperty(sql,wheresAndValues,jdbcTemplate);
+    }
+    /**
+     * 查询实体对象
+     * @param id
+     * @return
+     */
+    @Override
+    public <%=GetUpper(SourceTable.Name)%>Entity getOne(String id)
+    {
+        return jdbcTemplate.queryForObject("select * from <%=SourceTable.Name%> where "+DaoCommonUtil.PRIMARY_NAME+"=?",new Object[]{id},new BeanPropertyRowMapper<<%=GetUpper(SourceTable.Name)%>Entity>(<%=GetUpper(SourceTable.Name)%>Entity.class));
+    }
+
+    /**
+     * 查询实体对象
+     * @param wheresAndValues  查询列 查询值
+     * @return
+     */
+    @Override
+    public <%=GetUpper(SourceTable.Name)%>Entity getOne(TreeMap<String,Object> wheresAndValues)
+    {
+        StringBuffer sql =new StringBuffer( "SELECT * FROM <%=SourceTable.Name%> WHERE 1=1 ");
+       return   DaoCommonUtil.<<%=GetUpper(SourceTable.Name)%>Entity>getOneCom(sql,wheresAndValues,<%=GetUpper(SourceTable.Name)%>Entity.class,jdbcTemplate);
+    }
+
+    @Override
+    public List<<%=GetUpper(SourceTable.Name)%>Entity> findAll(String showColumns,TreeMap<String,Object> wheresAndValues, DaoOrder daoOrder) {
+        return DaoCommonUtil.findAll("<%=SourceTable.Name%>",showColumns,wheresAndValues,daoOrder,<%=GetUpper(SourceTable.Name)%>Entity.class,jdbcTemplate);
+    }
+    @Override
+    public List<<%=GetUpper(SourceTable.Name)%>Entity> findAll(TreeMap<String,Object> wheresAndValues, DaoOrder daoOrder) {
+        StringBuffer sql =new StringBuffer( "SELECT * FROM <%=SourceTable.Name%> WHERE 1=1  ");
+        return DaoCommonUtil.findAll(sql,wheresAndValues,daoOrder,<%=GetUpper(SourceTable.Name)%>Entity.class,jdbcTemplate);
+    }
+    @Override
+    public List<<%=GetUpper(SourceTable.Name)%>Entity> findAll() {
+        StringBuffer sql =new StringBuffer( "SELECT * FROM <%=SourceTable.Name%> WHERE 1=1  ");
+        return jdbcTemplate.query(sql.toString(),new BeanPropertyRowMapper<<%=GetUpper(SourceTable.Name)%>Entity>(<%=GetUpper(SourceTable.Name)%>Entity.class));
+    }
+
+    /**
+     *
+     * @param wheresAndValues
+     * @param begin 分页起始值
+     * @param count
+     * @return
+     */
+    @Override
+    public PageBean pageList(TreeMap<String,Object> wheresAndValues, Long queryDate, int begin, int count) {
+        StringBuffer sql =new StringBuffer( "SELECT * FROM <%=SourceTable.Name%> WHERE 1=1  ");
+        return DaoCommonUtil.pageQuery(sql,wheresAndValues,queryDate,null,begin,count,<%=GetUpper(SourceTable.Name)%>Entity.class,jdbcTemplate);
+    }
+    @Override
+    public PageBean pageList(TreeMap<String,Object> wheresAndValues, Long queryDate, DaoOrder daoOrder, int begin, int count) {
+        StringBuffer sql =new StringBuffer( "SELECT * FROM <%=SourceTable.Name%> WHERE 1=1 ");
+        return DaoCommonUtil.pageQuery(sql,wheresAndValues,queryDate,daoOrder,begin,count,<%=GetUpper(SourceTable.Name)%>Entity.class,jdbcTemplate);
+    }
+    @Override
+    public PageBean pageList(TreeMap<String,Object> wheresAndValues,String showColumns,
+                                           Long queryDate, DaoOrder daoOrder, int begin, int count) {
+        return DaoCommonUtil.pageQuery("<%=SourceTable.Name%>",showColumns,wheresAndValues,queryDate,daoOrder,begin,count,
+                <%=GetUpper(SourceTable.Name)%>Entity.class,jdbcTemplate);
+    }
+
+
+
+
+}
+
+
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

@@ -1,0 +1,240 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+
+<%@ Property Name="className" Type="System.String" Category="Strings" Description="类名称" %>
+
+<%@ Property Name="methodInfo" Type="System.String" Category="Custom" Description="方法信息" %>
+
+<%@ Import Namespace="System.Collections.Generic" %>
+<%@ Import Namespace="CodeSmith.Engine.Json" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+package com.hxyc.service.impl;
+
+import com.hxyc.thrift.ApiException;
+import com.alibaba.dubbo.config.annotation.Service;
+import com.hxyc.iface.<%=GetUpper(className)%>Service.Iface;
+import org.apache.thrift.TException;
+import com.hxyc.dao.MongoDBDAOImpl;
+import com.hxyc.utils.BsonUtils;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
+import org.bson.types.ObjectId;
+
+import java.nio.ByteBuffer;
+import java.util.List;
+
+
+
+
+/**
+ * 创建者 张相伟
+ * 功能
+ */
+@Service
+public class <%=GetUpper(className)%>Impl implements  Iface {
+<% 
+ //  System.Diagnostics.Debugger.Launch();  
+        System.Diagnostics.Debugger.Break();
+        string returnStr="";
+                JObject root = JObject.Parse(methodInfo);
+                Dictionary<string, string> jsonObjs = new Dictionary<string, string>();
+                  GetDic(root,jsonObjs);
+    Dictionary<string, object> newObjs = new Dictionary<string, object>();
+                  GetDicNewObj(root,newObjs);%>
+                  
+    @Resource
+    private MongoDAO dao;
+    private static final String COLLECTION_NAME = "<%=GetUpper(className)%>";
+    //////
+    //////查询列定义
+    private BasicDBObject fieldDBObject=new BasicDBObject("_id",1)
+    <%      foreach (string key in newObjs.Keys) {
+        if(key=="_id"){continue;}
+                 JProperty jp=newObjs[key] as JProperty;
+                  if(jp!=null&&jp.Value.Type==JTokenType.Array)
+                    {
+                        String val=jp.Value.First.ToString();
+                          JObject rootC1 = JObject.Parse(val);
+                Dictionary<string, string> jsonObjsC1 = new Dictionary<string, string>();
+                  GetDic(rootC1,jsonObjsC1);
+                        int index21=0;   foreach (string keyC in jsonObjsC1.Keys) {
+                        string str1=jsonObjsC1[keyC].ToString().Split('#')[0];
+                             string str2=jsonObjsC1[keyC].ToString().Split('#')[1];
+                             %> .append("<%=key%>.<%=keyC %>",1)   //<%=str2 %>
+                             <%} %>
+                          
+                        <%
+                    }
+                      else if(jp!=null&&jp.Value.Type==JTokenType.Object)
+                    {
+                           String val=jp.Value.ToString();
+                          JObject rootC1 = JObject.Parse(val);
+                Dictionary<string, string> jsonObjsC1 = new Dictionary<string, string>();
+                  GetDic(rootC1,jsonObjsC1);
+                        int index21=0;   foreach (string keyC in jsonObjsC1.Keys) {
+                        string str1=jsonObjsC1[keyC].ToString().Split('#')[0];
+                             string str2=jsonObjsC1[keyC].ToString().Split('#')[1];
+                             %> .append("<%=key%>.<%=keyC %>",1)   //<%=str2 %>
+                             <%} %>
+                          
+                        
+                        
+                        <%
+                    }else{
+                      string str1=newObjs[key].ToString().Split('#')[0];
+                     string str2=newObjs[key].ToString().Split('#')[1];%>
+                     .append("<%=key%>",1)   //<%=str2 %>
+                     <%}        }%>
+                    ;
+    
+     //////
+    //////查询列定义结束
+    
+    
+        /**
+          * 添加
+          <% int index1=0;   foreach (string key in jsonObjs.Keys) {
+             string str1=jsonObjs[key].ToString().Split('#')[0];
+             string str2=jsonObjs[key].ToString().Split('#')[1];
+             %> <% if(index1!=0) {%><% }%> *@  <%= key %>    <%=str2 %>
+             <% index1++;}%>
+            */
+            public ByteBuffer insert(
+          <% int index2=0;   foreach (string key in jsonObjs.Keys) {
+              if(key=="_id"||key=="timed")
+                  continue;
+             string str1=jsonObjs[key].ToString().Split('#')[0];
+             string str2=jsonObjs[key].ToString().Split('#')[1];
+             %> <% if(index2!=0) {%>,<% }%>  <%=str1 %>  <%= key %>    //<%=str2 %>
+             <% index2++;}%>
+        ) throws ApiException, TException {
+         MongoDBDAOImpl dao=MongoDBDAOImpl.getMongo();
+        BasicDBObject object=new BasicDBObject();
+          <%    
+          
+             
+          int location2=0;   foreach (string key in newObjs.Keys) {
+              if(key=="_id"||key=="timed")
+                  continue;
+                 %>
+                 <% if(location2!=0) {%> <% }%>
+                 <%
+                 JProperty jp=newObjs[key] as JProperty;
+                  if(jp!=null&&jp.Value.Type==JTokenType.Array)
+                    {
+                        String val=jp.Value.First.ToString();
+                        %>
+                        
+                        <%
+                    }
+                      else if(jp!=null&&jp.Value.Type==JTokenType.Object)
+                    {
+                          
+                          String val=jp.Value.ToString();
+                          JObject rootC1 = JObject.Parse(val);
+                Dictionary<string, string> jsonObjsC1 = new Dictionary<string, string>();
+                  GetDic(rootC1,jsonObjsC1);
+                        %>
+                       BasicDBObject cObj<%=key%> =new BasicDBObject().
+                        <%  foreach(string key1 in jsonObjsC1.Keys) { %>
+                       cObj<%=key%>.put("<%=key1 %>",<%=key1 %>);
+                        <%}%> 
+                       object.put("<%=key %>",cObj<%=key%>);
+                        <%
+                    }else{
+                 
+                 
+                     string str1=newObjs[key].ToString().Split('#')[0];
+                     string str2=newObjs[key].ToString().Split('#')[1];
+                     %>   
+                     object.put("<%=key %>",<%=key %>); /***<%=str2  %>*/
+                     <%} location2++;}%>
+           BSONObject ret= dao.insert("<%=className%>",object);
+           if(ret==null)
+           return null;
+           else{
+            ByteBuffer byteBuffer= BsonUtils.toByteBuffer(object);
+           // BSONObject obj = BsonUtils.fromByteBuffer(byteBuffer);
+            return byteBuffer;
+            }
+        }
+        
+             
+            
+        <%
+    
+    
+        %>
+    //子项添加
+    //////////////////////////
+    ///////////////////////////
+    /////// <%      foreach (string key in newObjs.Keys) {
+                 JProperty jp=newObjs[key] as JProperty;
+                  if(jp!=null&&jp.Value.Type==JTokenType.Array)
+                    {
+                        String val=jp.Value.First.ToString();
+                          JObject rootC1 = JObject.Parse(val);
+                Dictionary<string, string> jsonObjsC1 = new Dictionary<string, string>();
+                  GetDic(rootC1,jsonObjsC1);
+                        %>/**子集合的添加（）**/
+                        public void insert<%= GetUpper(key) %> (String pid,
+                            <% 
+                        int index21=0;   foreach (string keyC in jsonObjsC1.Keys) {
+                        string str1=jsonObjsC1[keyC].ToString().Split('#')[0];
+                             string str2=jsonObjsC1[keyC].ToString().Split('#')[1];
+                             %> <% if(index21!=0) {%>,<% }%>  <%=str1 %>  <%= keyC %>    //<%=str2 %>
+                             <%} %>
+                           )
+                           {
+                            MongoDBDAOImpl dao=MongoDBDAOImpl.getMongo();
+                                    BasicDBObject whereObj = new BasicDBObject();
+                                basicDBObject1.put("_id",new ObjectId(pid));
+                         BasicDBObject updateObj=new BasicDBObject("$push",new BasicDBObject("<%=key%>",<% 
+                        int index211=0;   foreach (string keyC in jsonObjsC1.Keys) {
+                        string str1=jsonObjsC1[keyC].ToString().Split('#')[0];
+                             string str2=jsonObjsC1[keyC].ToString().Split('#')[1];
+                             %> <% if(index211==0) {%>new BasicDBObject("<%= keyC %> ",<%= keyC %> )<% }else{%>.append(<%=keyC %> ,<%= keyC %>  )<%}%>  //<%=str2 %>
+                             <%index211++;} %>)  );
+                             WriteResult ret=   dao.update("<%=className%>",whereObj,updateObj);
+                            return  ret.getN()>0?0:1;
+                           }
+                        <%
+                    }
+                      else if(jp!=null&&jp.Value.Type==JTokenType.Object)
+                    {
+                        %>
+                        <%
+                    }else{
+                     %>   
+                     
+                     
+                     <%}        }%>
+                     
+                     
+                     
+                         //子项添加结束
+    //////////////////////////
+    ///////////////////////////
+    ///////
+}
+
+
+     
+<!-- #include file="../ScriptTemplate.cst" -->
+<script runat="template" >
+        private string getDubooRetStr(string retStr)
+        {
+            if(retStr=="String")
+                return "null";
+            if(retStr=="int")
+                return "0";
+            return "null";
+        }
+</script>

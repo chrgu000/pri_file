@@ -1,0 +1,280 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+<%@ Property Name="NameSpace" Type="System.String" Category="Strings" Description="nameSpace" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="tableName" %>
+
+package  com.zn.zxw.intelligencize.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import org.ksoap2.serialization.KvmSerializable;
+import com.zn.myinterface.AbstractStartDateEntity;
+  	/**
+	*备注:<%= SourceTable.Description %>
+	*/
+    public class <%=getT_Table( SourceTable.Name)  %>   extends AbstractStartDateEntity implements Serializable,KvmSerializable
+    {
+        public <%=getT_Table(  SourceTable.Name ) %>()
+        { }
+		
+		
+		<% foreach (ColumnSchema column in SourceTable.Columns) { %>
+		/**
+		*<%= column.Description %>
+		*/
+		private <%= GetCSType(column) %>   _<%=Camel( column.Name) %>;//<%= column.Description %>
+		<% } %>
+		<%	foreach (TableKeySchema  key in SourceTable.ForeignKeys){	%>
+		private  <%= getT_Table(key.PrimaryKeyTable.Name)  %>  _<%= Camel( getT_Table(key.PrimaryKeyTable.Name )) %>;
+		<%}%>
+		
+		//list FK
+  <%
+string[] tables=new string[SourceTable.PrimaryKeys.Count];
+	for(int fki=0;fki<tables.Length;fki++)
+		{
+			tables[fki]="";
+		}
+string[] jiluTable=new string[SourceTable.PrimaryKeys.Count];
+int i=0;
+bool bl=false;
+foreach(TableKeySchema pk in SourceTable.PrimaryKeys)
+    {    
+		for(int fki=0;fki<tables.Length;fki++)
+		{
+			if(tables[fki]==pk.ForeignKeyTable.Name)
+			{   
+				bl=true;
+			}
+		}
+		if(bl)
+		{
+		jiluTable[i]=pk.ForeignKeyTable.Name;
+		bl=false;
+		}
+		tables[i]=pk.ForeignKeyTable.Name;
+		i++;
+	}
+	i=0;
+foreach(TableKeySchema pk in SourceTable.PrimaryKeys)
+	{
+		for(int fki=0;fki<jiluTable.Length;fki++)
+		{
+			if(jiluTable[fki]==pk.ForeignKeyTable .Name)
+			{
+				i++;
+				bl=true;
+			}
+		}
+		if(bl){%>
+    private List<<%=getT_Table( pk.ForeignKeyTable .Name) %>> _<%=Camel( getT_Table( pk.ForeignKeyTable.Name))+i%>s;
+   <%bl=false; }else{%>
+ private List<<%=getT_Table( pk.ForeignKeyTable .Name) %>> _<%=Camel( getT_Table( pk.ForeignKeyTable .Name)) %>s;
+ <%}%>
+    <% }%>
+		
+		
+		
+		<% foreach (ColumnSchema column in SourceTable.Columns) {  %>
+		
+		/**
+		*<%= column.Description %>
+		*/
+		public <%= GetCSType(column) %> get<%= column.Name %>()
+		{
+		
+			 return _<%= Camel(column.Name) %>; 
+		}
+		/**
+		*<%= column.Description %>
+		*/
+		public void  set<%= column.Name %> (<%= GetCSType(column)%>  <%= column.Name %> )
+		{
+			_<%= Camel(column.Name) %> = <%= column.Name %> ;
+		}
+		
+		<% } %>
+	
+		
+		
+		<%	foreach (TableKeySchema  key in SourceTable.ForeignKeys){	%>
+		
+		public <%= getT_Table( key.PrimaryKeyTable.Name)  %>  get<%= getT_Table( key.PrimaryKeyTable.Name)  %>()
+		{
+		return _<%=  Camel(getT_Table(key.PrimaryKeyTable.Name )) %>;
+		}
+		
+		public void  set<%=getT_Table(  key.PrimaryKeyTable.Name ) %>(<%=getT_Table(  key.PrimaryKeyTable.Name)  %>  <%=getT_Table(  key.PrimaryKeyTable.Name ) %>)
+		{
+		 _<%=  Camel(getT_Table(key.PrimaryKeyTable.Name )) %> =<%= getT_Table( key.PrimaryKeyTable.Name ) %>;
+		
+		}
+		<%}%>
+		
+		
+				//list FK
+  <%
+int ii=0;
+foreach(TableKeySchema pk in SourceTable.PrimaryKeys){	
+	for(int fki=0;fki<jiluTable.Length;fki++)
+		{
+			if(jiluTable[fki]==pk.ForeignKeyTable .Name)
+			{
+				ii++;
+				bl=true;
+			}
+		}
+		
+		if(bl){
+			%>	public List< <%= getT_Table( pk.ForeignKeyTable.Name)  %>>  get<%= getT_Table( pk.ForeignKeyTable.Name)+ii  %>s()
+		{
+		return _<%=  Camel(getT_Table(pk.ForeignKeyTable.Name ))+ii %>s;
+		}
+		
+		public void  set<%=getT_Table(pk.ForeignKeyTable.Name)+ii%>s(List<<%=getT_Table(pk.ForeignKeyTable.Name)  %>>  <%=getT_Table(pk.ForeignKeyTable.Name )+ii%>s)
+		{
+		 _<%=  Camel(getT_Table(pk.ForeignKeyTable.Name ))+ii %>s =<%= getT_Table( pk.ForeignKeyTable.Name )+ii %>s;
+		
+		}
+			<%
+			bl=false;}
+			else{
+	
+	%>
+   		public List< <%= getT_Table( pk.ForeignKeyTable.Name)  %>>  get<%= getT_Table( pk.ForeignKeyTable.Name)  %>s()
+		{
+		return _<%=  Camel(getT_Table(pk.ForeignKeyTable.Name )) %>s;
+		}
+		
+		public void  set<%=getT_Table(pk.ForeignKeyTable.Name)%>s(List<<%=getT_Table(pk.ForeignKeyTable.Name)  %>>  <%=getT_Table(pk.ForeignKeyTable.Name ) %>s)
+		{
+		 _<%=  Camel(getT_Table(pk.ForeignKeyTable.Name )) %>s =<%= getT_Table( pk.ForeignKeyTable.Name ) %>s;
+		
+		}
+        
+      
+    <%}}%>
+      	@Override
+		public String AcquireStartDate() {
+			// TODO Auto-generated method stub
+			return this._publishDate;
+		}
+		
+		@Override
+	public Object getProperty(int index) {
+		 switch (index) {  
+			<%	
+			for(i=0;i<SourceTable.Columns.Count-1;i++){	%>
+         case <%=i%>:  
+             return this._<%=  getT_Table(SourceTable.Columns[i].Name )%>;  //<%= (SourceTable.Columns[i].Description %>
+        <%}%>
+         default:  
+             break;  
+		 }  
+		return null;
+	}
+
+	@Override
+	public int getPropertyCount() {
+		// TODO Auto-generated method stub
+		return <%=SourceTable.Columns.Count%>;
+	}
+
+	@Override
+	public void getPropertyInfo(int arg0, Hashtable arg1, PropertyInfo attribute) {
+		 switch (arg0) {  
+       	<%	
+			for(i=0;i<SourceTable.Columns.Count-1;i++){	%>
+         case <%=i%>:  
+		attribute.type=PropertyInfo._CLASS; 
+		attribute.name = "_<%=  getT_Table(SourceTable.Columns[i].Name )%>";  //<%= (SourceTable.Columns[i].Description %>
+        <%}%> 
+         default:  
+             break;  
+     }  
+		
+	}
+
+	@Override
+	public void setProperty(int arg0, Object arg1) {
+		   switch (arg0) {  
+           case 0:  
+               _id = arg1.toString();  
+               break;  
+           case 1:  
+               _content = arg1.toString();  
+               break;  
+           case 2:  
+               _userId =  arg1.toString();  
+               break;  
+           default:  
+               break;  
+       }  
+		
+	}
+    }
+ 
+	
+		
+
+
+
+<script runat="template">
+// My methods here.
+
+public string Camel(string str)
+{
+
+	str=str.Substring(0,1).ToLower()+str.Substring(1);
+	
+	return str;
+}
+
+public string getT_Table(string str)
+{
+	str=str.Substring(2);
+	str=str.Replace("_","");
+	return str;
+}
+
+public static string GetCSType(ColumnSchema column)
+		{
+			if (column.Name.EndsWith("TypeCode")) return column.Name;
+			
+			switch (column.DataType)
+			{
+				case DbType.AnsiString: return "STRING";
+				case DbType.AnsiStringFixedLength: return "STRING";
+				case DbType.Binary: return "byte[]";
+				case DbType.Boolean: return "BOOLEAN";
+				case DbType.Byte: return "byte";
+				case DbType.Currency: return "DOUBLE";
+				case DbType.Date: return "STRING";
+				case DbType.DateTime: return "STRING";
+				case DbType.Decimal: return "DOUBLE";
+				case DbType.Double: return "DOUBLE";
+				case DbType.Guid: return "Guid";
+				case DbType.Int16: return "SHORT";
+				case DbType.Int32: return "INTEGER";
+				case DbType.Int64: return "LONG";
+				case DbType.Object: return "STRING";
+				case DbType.SByte: return "BYTE";
+				case DbType.Single: return "FLOAT";
+				case DbType.String: return "STRING";
+				case DbType.StringFixedLength: return "STRING";
+				case DbType.Time: return "TimeSpan";
+				case DbType.UInt16: return "ushort";
+				case DbType.UInt32: return "INTEGER";
+				case DbType.UInt64: return "LONG";
+				case DbType.VarNumeric: return "DOUBLE";
+				default:
+				{
+					return "__UNKNOWN__" + column.NativeType;
+				}
+			}
+		}
+</script>

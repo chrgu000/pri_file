@@ -1,0 +1,37 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ Template Language="C#" TargetLanguage="Text" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SampleStringProperty" Default="SomeValue" Type="System.String" %>
+<%@ Property Name="SampleBooleanProperty" Default="True" Type="System.Boolean" %>
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="???????????????" %>
+
+<%for (int i = 0; i < this.SourceTables.Count; i++)
+	{
+    TableSchema table=this.SourceTables[i];
+    %>
+	 INSERT INTO [Intelligentize].[dbo].[T_TableList_Info]
+           ([Id],[TableName] ,[TableValue],[State] ,[Field])
+     VALUES ('<%="tl_"+getT_Table(table.Name)+i  %>' ,'<%=table.Description %>' ,'<%=table.Name %>' ,'1',null )
+<%	} 
+%>
+
+GO
+
+
+<script runat="template">
+// My methods here.
+public string getT_Table(string str)
+{
+	str=str.Substring(2);
+	str=str.Substring(0,str.Length-4);
+	return str;
+}
+</script>

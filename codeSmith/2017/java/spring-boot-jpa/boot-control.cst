@@ -1,0 +1,498 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.controller.information;
+
+import java.io.PrintWriter;
+import java.util.Calendar;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import net.sf.json.JSONArray;
+import <%=nameSpace %>.common.ajax.AjaxJson;
+import <%=nameSpace %>.common.web.utils.AppUtil;
+import <%=nameSpace %>.common.web.utils.Const;
+import <%=nameSpace %>.common.web.utils.DateUtil;
+import <%=nameSpace %>.common.web.utils.UuidUtil;
+import <%=nameSpace %>.common.web.utils.Page;
+import <%=nameSpace %>.common.web.utils.PageData;
+import <%=nameSpace %>.controller.base.BaseController;
+import <%=nameSpace %>.utils.AttachmentUtil;
+import <%=nameSpace %>.entity.system.SysUsers;
+import <%=nameSpace %>.utils.WebDateUtils;
+import <%=nameSpace %>.system.service.LevelService;
+import <%=nameSpace %>.system.service.Sys_moduleService;
+import <%=nameSpace %>.infomation.service.TB_attachmentInfoService;
+import <%=nameSpace %>.infomation.service.<%=GetUpper(SourceTable.Name)%>Service;
+import <%=nameSpace %>.web.contutlis.Jurisdiction;
+import <%=nameSpace %>.web.contutlis.ObjectExcelView;
+
+ 
+
+
+
+
+/**
+ * 
+ * @类描述:<%=SourceTable.Description %>
+ * @项目名称:jky-manager-web
+ * @类名称:<%=GetUpper(SourceTable.Name)%>Controller
+ * @包名:com.jky.soft.controller.information
+ * @文件名称:<%=GetUpper(SourceTable.Name)%>Controller.java
+ * @创建人:张相伟  
+ * @创建时间:<%=DateTime.Now %>  
+ * @修改人:  
+ * @修改时间:  
+ * @修改备注: 
+ * @单位:贵交科交通信息工程研究院
+ * @版本:v1.0版
+ */
+@Controller
+@RequestMapping(value="/<%=SourceTable.Name%>")
+public class <%=GetUpper(SourceTable.Name)%>Controller extends BaseController {
+	
+	String menuUrl = "<%=SourceTable.Name%>/list.do"; //菜单地址(权限用)
+	@Resource(name="<%=SourceTable.Name%>Service")
+	private <%=GetUpper(SourceTable.Name)%>Service <%=SourceTable.Name%>Service;
+	@Resource(name="tb_attachmentInfoService")
+	private TB_attachmentInfoService tb_attachmentInfoService;
+	@Resource(name = "sys_moduleService")
+	private Sys_moduleService sys_moduleService;
+	//权限操作服务类
+	@Resource(name="levelService")
+	private LevelService levelService;
+
+	/**
+	 * 新增
+	 */
+	@RequestMapping(value="/save")
+	public ModelAndView save() throws Exception{
+		logBefore(logger, "新增<%=SourceTable.Description %>");
+		if(!Jurisdiction.buttonJurisdiction(menuUrl, "add")){return null;} //校验权限
+		ModelAndView mv = this.getModelAndView();
+		PageData pd = this.getPageData();
+		String uuidString=this.get32UUID();
+		pd.put("TFID", this.get32UUID());	//主键
+
+		pd.put("tfCreateTime", DateUtil.getTime());
+		SysUsers sessionCode = getSessionUser();
+
+		pd.put("tfSysUserId", sessionCode.getTfId());
+
+		pd.put("tfSysRolesId", sessionCode.getTfSysRoleId());
+
+		pd.put("tfSysUnitId", sessionCode.getTfSysUnitId());
+
+		pd.put("tfSysDeptId", sessionCode.getTfSysDeptId());
+        pd.put("tfDeleteFlag", 1);
+		<%=SourceTable.Name%>Service.save(pd);
+		AttachmentUtil.saveAttachment(pd.getString("file_json"), uuidString, this,tb_attachmentInfoService);
+		mv.addObject("msg","success");
+		mv.setViewName("save_result");
+		return mv;
+	}
+
+	/**
+	 * 导入
+	 */
+	@RequestMapping(value="/addAll")
+	@ResponseBody
+	public AjaxJson addAll() throws Exception{
+		logBefore(logger, "新增<%=SourceTable.Description %>");
+		if(!Jurisdiction.buttonJurisdiction(menuUrl, "add")){return null;} //校验权限
+		PageData pd = this.getPageData();
+		AjaxJson jsonRet=new AjaxJson();
+		jsonRet.setMsg("导入失败!");
+		jsonRet.setResult(0);
+		String jsonStr= pd.getString("jsonStr");
+		if(jsonStr==null||jsonStr.length()<10)
+			return jsonRet;
+		try {
+			JSONArray a1= JSONArray.fromObject(jsonStr);
+			List<PageData> pdList=new ArrayList<PageData>();
+			for(int i=0;i<a1.size();i++){
+				PageData pdItem=new PageData();
+				pdItem.put("tfCode", UuidUtil.getPobject(""));
+				pdItem.put("TFID", this.get32UUID());
+				<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember||isContinue(column))continue;%>
+					//<%= column.Description %>
+					pdItem.put("<%= column.Name %>", a1.getJSONObject(i).getString("<%= column.Name %>"));
+				<% } %>
+				if(a1.getJSONObject(i).getString("tfOrder")==null||
+						a1.getJSONObject(i).getString("tfOrder").trim().length()==0)
+					pdItem.put("tfOrder", "0");
+				else
+					pdItem.put("tfOrder", a1.getJSONObject(i).getString("tfOrder"));
+				pdItem.put("tfCreateTime", DateUtil.getTime());
+				SysUsers sessionCode = getSessionUser();
+	
+				pdItem.put("tfSysUserId", sessionCode.getTfId());
+	
+				pdItem.put("tfSysRolesId", sessionCode.getTfSysRoleId());
+	
+				pdItem.put("tfSysUnitId", sessionCode.getTfSysUnitId());
+	
+				pdItem.put("tfSysDeptId", sessionCode.getTfSysDeptId());
+				pdItem.put("tfDeleteFlag", 1);
+				pdList.add(pdItem);		
+			}
+			<%=SourceTable.Name%>Service.saveAll(pdList);
+			jsonRet.setResult(1);
+			jsonRet.setMsg("导入成功！");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return jsonRet;
+	}
+	
+	
+	/**
+	 * 删除
+	 */
+	@RequestMapping(value="/delete")
+	public void delete(PrintWriter out){
+		logBefore(logger, "删除<%=SourceTable.Description %>");
+		if(!Jurisdiction.buttonJurisdiction(menuUrl, "del")){return;} //校验权限
+		PageData pd = new PageData();
+		try{
+			pd = this.getPageData();
+			<%=SourceTable.Name%>Service.delete(pd);
+			out.write("success");
+			out.close();
+		} catch(Exception e){
+			logger.error(e.toString(), e);
+		}
+		
+	}
+	
+	/**
+	 * 修改
+	 */
+	@RequestMapping(value="/edit")
+	public ModelAndView edit() throws Exception{
+		logBefore(logger, "修改<%=SourceTable.Description %>");
+		if(!Jurisdiction.buttonJurisdiction(menuUrl, "edit")){return null;} //校验权限
+		ModelAndView mv = this.getModelAndView();
+		PageData pd =  this.getPageData();
+
+//		pd.put("tfUpdate_Date", DateUtil.getTime());
+//		SysUsers sessionCode = getSessionUser();
+
+//		pd.put("tfUpdate_UserId", sessionCode.getTfId());
+
+//		pd.put("tfSysRolesId", sessionCode.getTfSysRoleId());
+
+//		pd.put("tfSysUnitId", sessionCode.getTfSysUnitId());
+
+//		pd.put("tfSysDeptId", sessionCode.getTfSysDeptId());
+
+		<%=SourceTable.Name%>Service.edit(pd);
+		AttachmentUtil.editAttachment(pd.getString("file_json"),pd.getString("old_file_json"), pd.getString("TFID"), this,tb_attachmentInfoService);
+		
+		mv.addObject("msg","success");
+		mv.setViewName("save_result");
+		return mv;
+	}
+	
+	/**
+	 * 列表
+	 */
+	@RequestMapping(value="/list")
+	public ModelAndView list(Page page){
+		logBefore(logger, "列表<%=SourceTable.Description %>");
+		if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;} //校验权限
+		ModelAndView mv = this.getModelAndView();
+		PageData pd = this.getPageData();
+		String startDate=pd.getString("lastLoginStart");
+		String endDate=pd.getString("lastLoginEnd");
+		if(pd.getString("lastLoginStart")!=null)
+		{
+			String date=WebDateUtils.fomatDate(startDate,-1,Calendar.SECOND);
+			if(date!=null)
+				pd.put("lastLoginStart",date);
+		}
+		if(pd.getString("lastLoginEnd")!=null)
+		{
+			String date=WebDateUtils.fomatDate(endDate,1,Calendar.SECOND);
+			if(date!=null)
+				pd.put("lastLoginEnd",date);
+		}
+		try{
+			pd=levelService.getLevel(pd,this.getSessionUser());
+			page.setPd(pd);
+			List<PageData>	varList = <%=SourceTable.Name%>Service.list(page);	//
+			mv.setViewName("information/<%=SourceTable.Name%>/<%=SourceTable.Name%>_list");
+			mv.addObject("varList", varList);
+			mv.addObject("pd", pd);
+			mv.addObject(Const.SESSION_QX,this.getHC());	//按钮权限
+			if(getPageData().get("tfmo")!=null)
+				mv.addObject("tfmo", getPageData().get("tfmo"));
+		} catch(Exception e){
+			logger.error(e.toString(), e);
+		}
+		return mv;
+	}
+	/**
+	 * 左侧菜单
+	 */
+	@RequestMapping(value="/leftTree")
+	public ModelAndView leftTree(){
+		logBefore(logger, "列表数菜单<%=SourceTable.Description %>");
+		if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;} //校验权限
+		ModelAndView mv = this.getModelAndView();
+		try{
+			mv.setViewName("information/<%=SourceTable.Name%>/<%=SourceTable.Name%>_left");
+			mv.addObject(Const.SESSION_QX,this.getHC());	//按钮权限
+			if(getPageData().get("tfmo")!=null)
+				mv.addObject("tfmo", getPageData().get("tfmo"));
+		} catch(Exception e){
+			logger.error(e.toString(), e);
+		}
+		return mv;
+	}
+	
+	/**
+	 * 列表json
+	 */
+	@RequestMapping(value="/listJson")
+	@ResponseBody
+	public AjaxJson listJson(){
+		AjaxJson json=new AjaxJson();
+		logBefore(logger, "log <%=SourceTable.Description %>listJson");
+		PageData pd = new PageData();
+		pd=levelService.getLevel(pd,this.getSessionUser());
+		try{
+			pd = this.getPageData();
+			if(pd.getString("lastLoginStart")!=null)
+			{
+				String date=WebDateUtils.fomatDate(pd.getString("lastLoginStart"),-1,Calendar.SECOND);
+				if(date!=null)
+					pd.put("lastLoginStart",date);
+			}
+			if(pd.getString("lastLoginEnd")!=null)
+			{
+				String date=WebDateUtils.fomatDate(pd.getString("lastLoginEnd"),1,Calendar.SECOND);
+				if(date!=null)
+					pd.put("lastLoginEnd",date);
+			}
+			pd=levelService.getLevel(pd,this.getSessionUser());
+			pd.put("tfDeleteFlag", 1);
+			List<PageData>	varList = <%=SourceTable.Name%>Service.listAll(pd);	
+			json.setResult(1);
+			json.setVarList(varList);
+			json.setMsg("成功");
+		} catch(Exception e){
+			logger.error(e.toString(), e);
+			json.setResult(0);
+			json.setMsg("异常");
+		}
+		return json;
+	}
+	/**
+	 * 查询属性是否存在
+	 */
+	@RequestMapping(value="/findFieldExists")
+	@ResponseBody
+	public AjaxJson findFieldExists(){
+		AjaxJson json=new AjaxJson();
+		logBefore(logger, " <%=SourceTable.Description %> log findFieldExists");
+		PageData pd = new PageData();
+		try{
+			pd = this.getPageData();
+			List<PageData>	obj = <%=SourceTable.Name%>Service.propertyExists(pd);
+			
+			if(obj!=null)
+			{
+				json.setObj(1);
+				json.setMsg("已存在");
+			}else {
+				json.setObj(0);
+				json.setMsg("未存在");
+			}
+			json.setResult(1);
+			json.setObj(obj);
+		
+		} catch(Exception e){
+			logger.error(e.toString(), e);
+			json.setResult(0);
+			json.setMsg("异常");
+		}
+		return json;
+	}
+
+	/**
+	 * 通过code获得的单个对象
+	 */
+	@RequestMapping(value="/byIdJson")
+	@ResponseBody
+	public AjaxJson byIdJson(){
+		AjaxJson json=new AjaxJson();
+		logBefore(logger, "log <%=SourceTable.Description %>byIdJson");
+		PageData pd = new PageData();
+		try{
+			pd = this.getPageData();
+			PageData	obj = <%=SourceTable.Name%>Service.findById(pd);	
+			json.setResult(1);
+			json.setObj(obj);
+			json.setMsg("成功");
+		} catch(Exception e){
+			logger.error(e.toString(), e);
+			json.setResult(0);
+			json.setMsg("异常");
+		}
+		return json;
+	}
+	
+	
+	/**
+	 * 去新增页面
+	 */
+	@RequestMapping(value="/goAdd")
+	public ModelAndView goAdd(){
+		logBefore(logger, "去新增<%=SourceTable.Description %>页面");
+		ModelAndView mv = this.getModelAndView();
+		PageData pd =   this.getPageData();
+		try {
+			PageData pdMax = <%=SourceTable.Name%>Service.findMaxOrder(pd);
+			String tfOrder="";
+			if(pdMax==null)
+				tfOrder="1";
+			else
+			   {
+			   	 int order=Integer.parseInt(pdMax.get("tfOrder").toString())+1;
+			  	 tfOrder= order+"";
+			   } 
+//			String tfCode=pd.getString("tfCode");
+			pd.put("tfOrder", tfOrder);
+//			pd.put("tfCode", UuidUtil.getChildCode(tfCode,tfOrder));
+			mv.setViewName("information/<%=SourceTable.Name%>/<%=SourceTable.Name%>_edit");
+			if(getPageData().get("tfmo")!=null)
+				mv.addObject("tfmo", getPageData().get("tfmo"));
+			mv.addObject("msg", "save");
+			mv.addObject("pd", pd);
+		} catch (Exception e) {
+			logger.error(e.toString(), e);
+		}						
+		return mv;
+	}	
+	
+	/**
+	 * 去修改页面
+	 */
+	@RequestMapping(value="/goEdit")
+	public ModelAndView goEdit(){
+		logBefore(logger, "去修改<%=SourceTable.Description %>页面");
+		ModelAndView mv = this.getModelAndView();
+		PageData pd =   this.getPageData();
+		try {
+			pd = <%=SourceTable.Name%>Service.findById(pd);	//根据ID读取
+			mv.setViewName("information/<%=SourceTable.Name%>/<%=SourceTable.Name%>_edit");
+			mv.addObject("msg", "edit");
+			mv.addObject("pd", pd);
+			if(getPageData().get("tfmo")!=null)
+				mv.addObject("tfmo", getPageData().get("tfmo"));
+		} catch (Exception e) {
+			logger.error(e.toString(), e);
+		}						
+		return mv;
+	}	
+	
+	/**
+	 * 批量删除
+	 */
+	@RequestMapping(value="/deleteAll")
+	@ResponseBody
+	public Object deleteAll() {
+		logBefore(logger, "批量删除<%=SourceTable.Description %>");
+		if(!Jurisdiction.buttonJurisdiction(menuUrl, "dell")){return null;} //校验权限
+		PageData pd = new PageData();		
+		Map<String,Object> map = new HashMap<String,Object>();
+		try {
+			pd = this.getPageData();
+			List<PageData> pdList = new ArrayList<PageData>();
+			String DATA_IDS = pd.getString("DATA_IDS");
+			if(null != DATA_IDS && !"".equals(DATA_IDS)){
+				String ArrayDATA_IDS[] = DATA_IDS.split(",");
+				<%=SourceTable.Name%>Service.deleteAll(ArrayDATA_IDS);
+				pd.put("msg", "ok");
+			}else{
+				pd.put("msg", "no");
+			}
+			pdList.add(pd);
+			map.put("list", pdList);
+		} catch (Exception e) {
+			logger.error(e.toString(), e);
+		} finally {
+			logAfter(logger);
+		}
+		return AppUtil.returnObject(pd, map);
+	}	
+
+	/**
+	 * 导出到excel
+	 * @return
+	 */
+	@RequestMapping(value="/excel")
+	public ModelAndView exportExcel(){
+		logBefore(logger, "导出<%=SourceTable.Description %>到excel");
+		if(!Jurisdiction.buttonJurisdiction(menuUrl, "cha")){return null;}
+		ModelAndView mv = new ModelAndView();
+		PageData pd = new PageData();
+		pd = this.getPageData();
+		try{
+			Map<String,Object> dataMap = new HashMap<String,Object>();
+			List<String> titles = new ArrayList<String>();
+            
+            	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		titles.add("<%= column.Description %>");
+		<% } %>
+			dataMap.put("titles", titles);
+			List<PageData> varOList = <%=SourceTable.Name%>Service.listAll(pd);
+			List<PageData> varList = new ArrayList<PageData>();
+			for(int i=0;i<varOList.size();i++){
+				PageData vpd = new PageData();
+                	<% int i=0; foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		vpd.put("var<%= i %>", varOList.get(i).getString("var<%= column.Name %>"));
+		<% i++;} %>
+				varList.add(vpd);
+			}
+			dataMap.put("varList", varList);
+			ObjectExcelView erv = new ObjectExcelView();
+			mv = new ModelAndView(erv,dataMap);
+		} catch(Exception e){
+			logger.error(e.toString(), e);
+		}
+		return mv;
+	}
+	
+	
+}
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

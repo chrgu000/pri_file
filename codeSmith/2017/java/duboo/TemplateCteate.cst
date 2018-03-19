@@ -1,0 +1,73 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Debug="False" ResponseEncoding="UTF-8" %>
+<%@ Property Name="SampleStringProperty" Default="SomeValue" Type="System.String" %>
+<%@ Property Name="SampleBooleanProperty" Default="True" Type="System.Boolean" %>
+<%@ Property Name="className" Type="System.String" Category="Strings" Description="类名称" Default="help_policy"
+%>
+<%@ Property Name="filePath" Type="System.String" Category="Strings" Description="文件位置" Default="111"
+%>
+
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%@ Register Name="create_duboo_service" Template="create_duboo_service_template.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="create_thrift" Template="create_thrift_template.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="create_duboo_service_client_test" Template="create_duboo_service_client_test_template.cst"  MergeProperties="False" ExcludeProperties="" %>
+
+<%
+ 
+ 
+    
+%>
+<script runat="template">
+  
+        
+        public void Generate()
+        { 
+            CodeTemplate st=new create_duboo_service();
+                CreateTemplate(st,className+"Impl.java");
+                st=new create_thrift();
+                CreateTemplate(st,className+".thrift");
+                st=new create_duboo_service_client_test();
+                CreateTemplate(st,className+"ClientTest.java");
+            
+        } 
+        public void CreateTemplate(CodeTemplate temp,string fileName)
+        {
+            //System.Diagnostics.Debugger.Launch();  
+            System.Diagnostics.Debugger.Break();
+             string method="{\"m\":\"doAction\",\"i\":\"i32\",\"str1\":\"string\",\"return\":\"String\"}";
+             string method2="{\"m\":\"doAction2\",\"i2\":\"i32\",\"str3\":\"string\",\"return\":\"int\"}";
+            string methods= ""+method+"~"+method2+"";
+                       CodeTemplate st =temp;
+            string outputFile = "";
+        	st.SetProperty("methodInfo",methods);
+        	st.SetProperty("className",className);
+            
+            outputFile = string.Format("D:\\CodeCreate\\{0}\\{1}",className,fileName);
+            
+            st.RenderToFile(outputFile,true);
+        }
+
+// My methods here.
+public string SampleMethod()
+{
+  return "Method output.";
+}
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->
+ <%
+//System.Diagnostics.Debugger.Launch();  
+this.Generate();  %>  
+ <%=className %>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

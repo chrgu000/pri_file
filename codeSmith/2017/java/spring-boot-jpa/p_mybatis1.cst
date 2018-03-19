@@ -1,0 +1,68 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.bean;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity(name="<%= SourceTable.Name  %>")
+public class <%= GetUpper( SourceTable.Name)  %>Entity implements java.io.Serializable {
+	
+    	<% foreach (ColumnSchema column in SourceTable.Columns) { 
+                if(column.IsPrimaryKeyMember){
+                    %>
+                        @Id
+                    	@Column(name="<%= getLetterUpper(column.Name)%>")
+                    	private Stirng <%=column.Name%>;
+                    <% 
+                }else{
+                %>
+                    /**
+                     * <%= column.Description %> 
+                     */
+                	@Column(name="<%=getLetterUpper( column.Name) %>")
+	                private String  <%= column.Name %>;
+                <%}%>
+		<% } %>
+       
+       	<% foreach (ColumnSchema column in SourceTable.Columns) { %>
+                        /**
+                         * <%= column.Description %> 
+                         */
+                		public <%=GetJavaTypeUpper(column)%> get<%= GetUpper(column.Name) %>() { return <%= column.Name %>; }
+                         /**
+                          * <%= column.Description %> 
+                          */
+	                    public void set<%=  GetUpper(column.Name) %>(<%=GetJavaTypeUpper(column)%> <%= column.Name %>) { this.<%= column.Name %> = <%= column.Name %>; }
+               
+		<% } %>
+       
+       
+    }
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

@@ -1,0 +1,58 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.dao;
+
+import <%=nameSpace %>.bean.Ub_listxsnEntity;
+import <%=nameSpace %>.tool.dao_util.DaoOrder;
+
+import java.util.List;
+import java.util.TreeMap;
+
+/**
+ * @类描述:<%=SourceTable.Description %>
+ * @创建人: 
+ * @创建时间:<%=DateTime.Now %> 
+ * @修改人:  
+ * @修改时间:
+ * @修改备注: 
+ */
+public interface <%=GetUpper(SourceTable.Name)%>Dao {
+     int save(<%=GetUpper(SourceTable.Name)%>Entity entity);
+     int update(<%=GetUpper(SourceTable.Name)%>Entity entity);
+    int update(String columns,String primaryKey,Object... args);
+    int  update(<%=GetUpper(SourceTable.Name)%>Entity entity,String[] columns,String primaryKey,int[] argTypes);
+    int deleteToUpdateStatus(String id);
+    int activationToUpdateStatus(String id);
+    int delete(String id);
+    Long  isExistsProperty(TreeMap<String,Object> wheresAndValues);
+    <%=GetUpper(SourceTable.Name)%>Entity getOne(String id);
+    <%=GetUpper(SourceTable.Name)%>Entity getOne(TreeMap<String,Object> wheresAndValues);
+     List<<%=GetUpper(SourceTable.Name)%>Entity> findAll(String showColumns,TreeMap<String,Object> wheresAndValues, DaoOrder daoOrder);
+     List<<%=GetUpper(SourceTable.Name)%>Entity> findAll(TreeMap<String,Object> wheresAndValues, DaoOrder daoOrder) ;
+     List<<%=GetUpper(SourceTable.Name)%>Entity> findAll();
+    PageBean pageList(TreeMap<String,Object> wheresAndValues, Long queryDate, int begin, int count);
+    PageBean pageList(TreeMap<String,Object> wheresAndValues, Long queryDate, DaoOrder daoOrder, int begin, int count);
+    PageBean pageList(TreeMap<String,Object> wheresAndValues,String showColumns,
+                                    Long queryDate, DaoOrder daoOrder, int begin, int count);
+}
+
+
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

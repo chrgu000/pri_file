@@ -1,0 +1,185 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+
+var DBCommon =require('./DBCommon');
+var Sequelize=require('sequelize');
+var DBHelp=require('./DBHelp');
+var _dbHelp=new DBHelp();
+var config=require('../config/mysql_config');
+
+function <%=SourceTable.Name%>Dao() {
+
+<%string  columnStr="";
+for(int i=0;i<SourceTable.Columns.Count-1;i++) 
+{	
+    ColumnSchema column = SourceTable.Columns[i];
+				columnStr+= column.Name+",";
+} 
+for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) 
+ { 
+	ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+    columnStr+= column.Name ;
+ } 
+
+%>
+
+
+
+   /**
+	* 备注:<%= SourceTable.Description %>
+	*/
+    function UserDao(
+    	<% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				_<%= column.Name %>,
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				_<%= column.Name %>
+				<% } %>) {
+        <% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+				%>
+				this.<%= column.Name %>=_<%= column.Name %>;
+				<% } %>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+				this.<%= column.Name %>=_<%= column.Name %>;
+				<% } %>
+    }
+    //创建表define对象
+     var <%=SourceTable.Name%>Define = _dbHelp.sequelizeOBJ.define('<%=SourceTable.Name%>', {
+     
+     <% for(int i=0;i<SourceTable.Columns.Count-1;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.Columns[i];
+                    string name=column.Name;
+				%>
+                <%if(column.IsPrimaryKeyMember){ %>
+                 <%= column.Name %>: {type:<%=GetCSTypeUpper(column)%>, primaryKeys: true, unique: true},
+                <%}%>
+                <% else if(name=="GUID"){ %>
+                 GUID: {type: Sequelize.STRING, defaultValue: DBCommon.createUUID(),allowNull: false,  unique: true},
+                 <% } else { %>
+                 <%= column.Name %>: {type: <%=GetCSTypeUpper(column)%>,allowNull:<%= column.AllowDBNull?"true":"false" %>},
+                <%} 
+                }%>
+				<% for(int i=SourceTable.NonPrimaryKeyColumns.Count-1;i<SourceTable.NonPrimaryKeyColumns.Count;i++) %>
+				<% { 
+					ColumnSchema column = SourceTable.NonPrimaryKeyColumns[i];
+				%>
+			<%= column.Name %>: {type: <%=GetCSTypeUpper(column)%>,allowNull:<%= column.AllowDBNull?"true":"false" %>}
+				<% } %> },{
+            // 自定义表名
+            'freezeTableName': false,
+            //'tableName': 'xyz_users',
+            // 是否需要增加createdAt、updatedAt、deletedAt字段
+            'timestamps': true,
+            // 不需要createdAt字段
+            //'createdAt': true,
+            // 将updatedAt字段改个名
+            //'updatedAt': 'utime',
+            // 将deletedAt字段改名
+            // 同时需要设置paranoid为true（此种模式下，删除数据时不会进行物理删除，而是设置deletedAt为当前时间
+            //'deletedAt': 'dtime',
+            'paranoid': true
+        });
+  /**
+  *查询 <%= SourceTable.Description %>
+  */
+    this.queryAll=function(_where,callback)
+    {
+        <%=SourceTable.Name%>Define.findAll({
+            where: _where,
+            attribute:[<%= columnStr%>]
+        }).then(function(modes) {
+            callback(modes);
+        });
+    }
+/**
+*查询对象 <%= SourceTable.Description %>
+*/
+   this.queryMode=function(_where,callback)
+    {
+        <%=SourceTable.Name%>Define.findOne({
+            where: _where
+            , attribute:[<%= columnStr%>]
+        }).then(function(mode) {
+            callback(mode);
+        });
+    }
+
+	/**
+*删除对象 <%= SourceTable.Description %>
+*/
+   this.delMode=function(_id)
+    {
+       return  <%=SourceTable.Name%>Define.findOne({
+            where: {id:_id}
+        });
+    }
+   /**
+   **分页查询<%= SourceTable.Description %>
+   */
+      this.delMode=function(_where,_limit,_offset)
+    {
+        var result = <%=SourceTable.Name%>Define.findAndCountAll({
+                'where':_where,
+                'limit': _limit,
+                'offset': _offset * (_limit - 1)
+                });
+                return result;
+    }
+     /**
+   **添加数据 <%= SourceTable.Description %>
+   */
+      this.insert=function(_obj)
+    {
+      <%=SourceTable.Name%>Define.create(_obj._jsonObj).then(function (ret) {
+                obj.callback(ret);
+            }).catch(function (_e) {
+                obj.errBack( _e);
+            }) ;
+    }
+      /**
+   **修改数据 <%= SourceTable.Description %>
+   */
+      this.update=function(_whereJson,_updatJson)
+    {
+             var ret=   <%=SourceTable.Name%>Define.update(
+            _updatJson,{ where:_whereJson } );
+        return ret;
+    }
+      /**
+   **查询数据 <%= SourceTable.Description %>
+   */
+     this.queryOLD = function (_id,callback) {
+        <%=SourceTable.Name%>Define.query('SELECT * FROM <%=SourceTable.Name%> WHERE id = :id ',
+            { replacements: { id: _id }, type: Sequelize.QueryTypes.SELECT }
+        ).then(function(projects) {
+                var str=JSON.stringify(projects);
+                callback(str);
+            });
+    }
+
+}
+module.exports =  <%=SourceTable.Name%>Dao;
+<!-- #include file="ScriptTemplate.cst" -->

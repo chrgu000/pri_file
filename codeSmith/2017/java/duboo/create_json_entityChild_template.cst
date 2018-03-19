@@ -1,0 +1,156 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+
+<%@ Property Name="className" Type="System.String" Category="Strings" Description="类名称" %>
+
+<%@ Property Name="methodInfo" Type="System.String" Category="Custom" Description="方法信息" %>
+
+<%@ Import Namespace="System.Collections.Generic" %>
+<%@ Import Namespace="CodeSmith.Engine.Json" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+
+package com.hxyc.entity;
+
+import java.io.Serializable;
+/**
+ * 创建者 张相伟
+ * 功能
+ */
+public class <%=className%> implements Serializable {
+
+    <%
+      //  System.Diagnostics.Debugger.Launch();  
+        System.Diagnostics.Debugger.Break();
+        string returnStr="";
+                JObject root = JObject.Parse(methodInfo);
+             
+               Dictionary<string, object> newObjs = new Dictionary<string, object>();
+                  GetDicNewObj(root,newObjs);
+             
+             int location=0;   foreach (string key in newObjs.Keys) {
+                 %>
+                 <% if(location!=0) {%> <% }%>
+                 <%
+                 JProperty jp=newObjs[key] as JProperty;
+                  if(jp!=null&&jp.Value.Type==JTokenType.Array)
+                    {
+                        String val=jp.Value.First.ToString();
+                        
+                        if(val.IndexOf('#')!=1)
+                        {%>
+                            /***<%=val.Split('#')[1]%>*/
+                        <%}else{%>
+                             /****/
+                       <% }
+                        %>
+                       private  <%=GetUpper(key) %> <%=key %>;
+                        <%
+                    }
+                      else if(jp!=null&&jp.Value.Type==JTokenType.Object)
+                    {
+                          String val=jp.Value.ToString();
+                        
+                        if(val.IndexOf('#')!=1)
+                        {%>
+                            /***<%=val.Split('#')[1]%>*/
+                        <%}else{%>
+                             /****/
+                       <% }
+                        %>
+                        private <%=GetUpper(key) %> <%=key %>;
+                        <%
+                    }else{
+                 
+                 
+                     string str1=newObjs[key].ToString().Split('#')[0];
+                     string str2=newObjs[key].ToString().Split('#')[1];
+                     %>   
+                     
+                     /***<%=str2  %>*/
+                    private <%=getJavaStr11(str1) %>  <%= key %> ;  
+                     <%} location++;}%>
+
+     
+     
+     
+      <%
+             location=0;
+             foreach (string key in newObjs.Keys) {
+                 %>
+                 <% if(location!=0) {%> <% }%>
+                 <%
+                 JProperty jp=newObjs[key] as JProperty;
+                  if(jp!=null&&jp.Value.Type==JTokenType.Array)
+                    {
+                        String val=jp.Value.First.ToString();
+                        
+                        if(val.IndexOf('#')!=1)
+                        {%>
+                            /***<%=val.Split('#')[1]%>*/
+                        <%}else{%>
+                             /****/
+                       <% }
+                        %>
+                        public   void set<%=GetUpper(key) %>(<%=GetUpper(key) %> <%=key%>){
+                         this.<%=key%>=<%=key%>;
+                        }
+                          public   <%=GetUpper(key) %> get<%=GetUpper(key) %>(){
+                        return this.<%=key%>;
+                        }
+                        <%
+                    }
+                      else if(jp!=null&&jp.Value.Type==JTokenType.Object)
+                    {
+                          String val=jp.Value.ToString();
+                        
+                        if(val.IndexOf('#')!=1)
+                        {%>
+                            /***<%=val.Split('#')[1]%>*/
+                        <%}else{%>
+                             /****/
+                       <% }
+                        %>
+                            public   void set<%=GetUpper(key) %>(<%=GetUpper(key) %> <%=key%>){
+                         this.<%=key%>=<%=key%>;
+                        }
+                          public   <%=GetUpper(key) %> get<%=GetUpper(key) %>(){
+                        return this.<%=key%>;
+                        }
+                        <%
+                    }else{
+                 
+                 
+                     string str1=newObjs[key].ToString().Split('#')[0];
+                     string str2=newObjs[key].ToString().Split('#')[1];
+                     %>   
+                     
+                     /***<%=str2  %>*/
+                        public   void set<%=GetUpper(key) %>(<%=getJavaStr11(str1) %> <%=key%>){
+                         this.<%=key%>=<%=key%>;
+                        }
+                           /***<%=str2  %>*/
+                          public     <%=getJavaStr11(str1) %> get<%=GetUpper(key) %>(){
+                        return this.<%=key%>;
+                        }
+                     
+                     <%} location++;}%>
+    
+    
+}
+
+
+     
+<!-- #include file="../ScriptTemplate.cst" -->
+<script runat="template" >
+        private string getJavaStr11(string retStr)
+        {
+           
+            if(retStr.Trim()=="Int")
+                return "Integer";
+            return retStr;
+        }
+</script>

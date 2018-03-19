@@ -1,0 +1,56 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+
+<%@ Property Name="className" Type="System.String" Category="Strings" Description="类名称" %>
+<%@ Property Name="methodInfo" Type="System.String" Category="Custom" Description="方法信息" %>
+
+<%@ Import Namespace="System.Collections.Generic" %>
+<%@ Import Namespace="CodeSmith.Engine.Json" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+namespace java com.hxyc.thrift
+
+//enum RequestType {
+//    SAY_HELLO,   //问好
+//    QUERY_TIME,  //询问时间
+//}
+
+//struct Request {
+//    1: required RequestType type;  // 请求的类型，必选
+//    2: required string name;       // 发起请求的人的名字，必选
+//    3: optional i32 age;           // 发起请求的人的年龄，可选
+//}
+
+exception ApiException {
+    1: required i32 code;
+    2: optional string reason;
+}
+
+// 服务名
+service <%=className%> {
+        <%
+      //  System.Diagnostics.Debugger.Launch();  
+        System.Diagnostics.Debugger.Break();
+        string[] jsons= methodInfo.Split('~');
+        for(int i=0;i<jsons.Length;i++)
+        {
+        string returnStr="";
+                JObject root = JObject.Parse(jsons[i]);
+                Dictionary<string, string> jsonObjs = new Dictionary<string, string>();
+                  GetDic(root,jsonObjs);
+             %>
+       <%=jsonObjs["return"] %> <%=jsonObjs["m"] %>(<% int index=0;   foreach (string key in jsonObjs.Keys) {if(key=="m")continue; if(key=="return")break;%> <%=index++%>: <% if(index>0){%><%=","%><%}  %> <%=thriftToJava(jsonObjs[key]) %>  <%= key %> <% index++;}%>)  throws (1:ApiException ae);
+          
+        <%}%>
+    
+}
+
+
+     
+<!-- #include file="../ScriptTemplate.cst" -->
+<script runat="template" >
+
+</script>

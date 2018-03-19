@@ -1,0 +1,95 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="请选择你要生成的表，可以多选！" %>
+<%@ Property Name="NameSpace" Type="System.String" Category="Context" Description="请输入你的命名空间，如MySystem，该名称将和后缀构成不同的层的命名空间" %>
+<%@ Property Name="isCreateDAL" Type="System.Boolean" Default="True" Optional="False" Category="输出选项" Description="是否生成DAL层项目？默认为生成" %>
+<%@ Property Name="dalPath" Type="System.String" Default=".DAL" Optional="True" Category="输出选项" Description="请选择你DAL层项目的后缀标识名，默认为解决方案名＋“.DAL”" %>
+
+
+<%
+/*
+Dal
+*/
+%>
+<% foreach( TableSchema table in this.SourceTables){ 
+
+    CodeTemplate st = null;
+    string outputFile = "";
+	//st.RenderToFile("\\"+table+"BLL.cs",true);
+    %>
+    <%=table.Name %>:[{<% foreach (ColumnSchema column in table.Columns) { %><%=column.Name%>:<%=column.Description %><% } %>}]
+
+    <%
+    st.RenderToFile(outputFile,true);
+    }
+	%>
+	
+<script runat="template">
+// My methods here.
+
+public string Camel(string str)
+{
+
+	str=str.Substring(0,1).ToLower()+str.Substring(1);
+	
+	return str;
+}
+public string getT_Table(string str)
+{
+	str=str.Substring(2);
+	str=str.Replace("_","");
+	return str;
+}
+public string GetTable(string str)
+{
+	str=str.Substring(0,1).ToUpper()+str.Substring(1);
+	return str;
+}
+
+public static string GetCSType(ColumnSchema column)
+		{
+			if (column.Name.EndsWith("TypeCode")) return column.Name;
+			
+			switch (column.DataType)
+			{
+				case DbType.AnsiString: return "string";
+				case DbType.AnsiStringFixedLength: return "string";
+				case DbType.Binary: return "byte[]";
+				case DbType.Boolean: return "bool";
+				case DbType.Byte: return "byte";
+				case DbType.Currency: return "decimal";
+				case DbType.Date: return "DateTime";
+				case DbType.DateTime: return "DateTime";
+				case DbType.Decimal: return "decimal";
+				case DbType.Double: return "double";
+				case DbType.Guid: return "Guid";
+				case DbType.Int16: return "short";
+				case DbType.Int32: return "int";
+				case DbType.Int64: return "long";
+				case DbType.Object: return "object";
+				case DbType.SByte: return "sbyte";
+				case DbType.Single: return "float";
+				case DbType.String: return "string";
+				case DbType.StringFixedLength: return "string";
+				case DbType.Time: return "TimeSpan";
+				case DbType.UInt16: return "ushort";
+				case DbType.UInt32: return "uint";
+				case DbType.UInt64: return "ulong";
+				case DbType.VarNumeric: return "decimal";
+				default:
+				{
+					return "__UNKNOWN__" + column.NativeType;
+				}
+			}
+		}
+</script>

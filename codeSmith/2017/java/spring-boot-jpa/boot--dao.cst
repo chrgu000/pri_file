@@ -1,0 +1,126 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.infomation.service;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import <%=nameSpace %>.common.web.utils.Page;
+import <%=nameSpace %>.common.web.utils.PageData;
+import <%=nameSpace %>.dao.DaoSupport;
+
+/**
+ * @类描述:<%=SourceTable.Description %>
+ * @项目名称:jky-manager-service
+ * @类名称:<%=SourceTable.Name%>Service
+ * @包名:<%=nameSpace %>.infomation.service
+ * @文件名称:<%=SourceTable.Name%>Service.java
+ * @创建人:张相伟  
+ * @创建时间:<%=DateTime.Now %> 
+ * @修改人:  
+ * @修改时间:
+ * @修改备注: 
+ * @单位:贵交科交通信息工程研究院
+ * @版本:v1.0版
+ */
+@Service("<%=SourceTable.Name%>Service")
+public class <%=GetUpper(SourceTable.Name)%>Service {
+
+	@Resource(name = "daoSupport")
+	private DaoSupport dao;
+	
+	/*
+	* 新增
+	*/
+	public void save(PageData pd)throws Exception{
+		dao.save("<%=GetUpper(SourceTable.Name)%>Mapper.save", pd);
+	}
+	/*
+	* 新增
+	*/
+	public void saveAll(List<PageData> listPd)throws Exception{
+		dao.save("<%=GetUpper(SourceTable.Name)%>Mapper.saveAll", listPd);
+	}
+	
+	/*
+	* 删除
+	*/
+	public void delete(PageData pd)throws Exception{
+		dao.delete("<%=GetUpper(SourceTable.Name)%>Mapper.forgeryDel", pd);
+	}
+	
+	/*
+	* 修改
+	*/
+	public void edit(PageData pd)throws Exception{
+		dao.update("<%=GetUpper(SourceTable.Name)%>Mapper.edit", pd);
+	}
+	
+	/*
+	* 查询属性值是否存在
+	*/
+	public List<PageData> propertyExists(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("<%=GetUpper(SourceTable.Name)%>Mapper.propertyExists", pd);
+	}
+	/*
+	*列表
+	*/
+	public List<PageData> list(Page page)throws Exception{
+		return (List<PageData>)dao.findForList("<%=GetUpper(SourceTable.Name)%>Mapper.datalistPage", page);
+	}
+	
+	/*
+	*列表(全部)
+	*/
+	public List<PageData> listAll(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("<%=GetUpper(SourceTable.Name)%>Mapper.listAll", pd);
+	}
+	
+	/*
+	* 通过id获取数据
+	*/
+	public PageData findById(PageData pd)throws Exception{
+		return (PageData)dao.findForObject("<%=GetUpper(SourceTable.Name)%>Mapper.findById", pd);
+	}
+	
+	public PageData findMaxOrder(PageData pd)throws Exception{
+		return (PageData)dao.findForObject("<%=GetUpper(SourceTable.Name)%>Mapper.findMaxOrder", pd);
+	}
+	
+	/*
+	* 批量删除
+	*/
+	public void deleteAll(String[] ArrayDATA_IDS)throws Exception{
+		dao.delete("<%=GetUpper(SourceTable.Name)%>Mapper.forgeryDelAll", ArrayDATA_IDS);
+	}
+	
+	/*
+	*分部分项列表
+	*/
+	public List<PageData> getQbitemList(PageData pd)throws Exception{
+		return (List<PageData>)dao.findForList("<%=GetUpper(SourceTable.Name)%>Mapper.getQbitemList",pd);
+	}
+}
+
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

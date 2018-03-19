@@ -1,0 +1,86 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Debug="False" ResponseEncoding="UTF-8" %>
+<%@ Property Name="SampleStringProperty" Default="SomeValue" Type="System.String" %>
+<%@ Property Name="SampleBooleanProperty" Default="True" Type="System.Boolean" %>
+
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="请选择你要生成的表，可以多选！" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+<%@ Register Name="boot_control" Template="boot_control.cst"  MergeProperties="False" ExcludeProperties="" %>
+
+<%@ Register Name="boot_idao_i" Template="boot_idao_i.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_dao" Template="boot_dao.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_services_impl" Template="boot_services_impl.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_services_interface" Template="boot_services_interface.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_entity" Template="boot_entity.cst"  MergeProperties="False" ExcludeProperties="" %>
+
+<%@ Property Name="dropDownListStr" Type="System.String" Default="" Optional="false" Category="Strings" Description="dropDownList" %>
+<% %> 
+<script runat="template">
+  
+        
+        public void Generate()
+        { 
+            foreach(TableSchema table in this.SourceTables){
+                String fileName=GetUpper(table.Name);
+                CodeTemplate st=new boot_control();
+                    CreateTemplate(st,fileName+"Controller.java",table,false,"controller");
+                    st=new boot_idao_i();
+                    CreateTemplate(st,table.Name+"Dao.java",table,true,"dao");
+                    st=new boot_dao();
+                    CreateTemplate(st,table.Name+"DaoImpl.java",table,false,"dao\\impl");
+                    st=new boot_services_impl();
+                    CreateTemplate(st,fileName+"ServiceImpl.java",table,false,"service\\impl");
+                    st=new boot_services_interface();
+                    CreateTemplate(st,fileName+"Service.java",table,false,"service");
+                    st=new boot_entity();
+                    CreateTemplate(st,fileName+"Entity.java",table,false,"bean");
+            }
+        } 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="temp"></param>
+        /// <param name="fileName"></param>
+        /// <param name="table"></param>
+        /// <param name="isDDL">是否需要处理下拉框</param>
+        public void CreateTemplate(CodeTemplate temp,string fileName,TableSchema table,bool isDDL,string filePath)
+        {
+            //System.Diagnostics.Debugger.Launch();  
+            System.Diagnostics.Debugger.Break();
+                       CodeTemplate st =temp;
+            string outputFile = "";
+            if(isDDL)
+                st.SetProperty("dropDownListStr",dropDownListStr);
+        	st.SetProperty("SourceTable",table);
+        	st.SetProperty("nameSpace",nameSpace);
+            String outFilePath="D:\\CodeCreate\\spring_boot\\0315\\"+filePath+"\\"+fileName;
+            outputFile = string.Format(outFilePath);
+            st.RenderToFile(outputFile,true);
+        }
+
+// My methods here.
+public string SampleMethod()
+{
+  return "Method output.";
+}
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->
+
+ <%
+// [{"code":"tfProjectCode","name":"tfProjectName"},{"code":"tfBidSectionId","name":"tfBidSectionName"}]-->
+//System.Diagnostics.Debugger.Launch();  
+this.Generate();  %>  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

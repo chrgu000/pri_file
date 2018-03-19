@@ -1,0 +1,246 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.service.impl;
+
+import <%=nameSpace %>.bean.<%=GetUpper(SourceTable.Name)%>Entity;
+import <%=nameSpace %>.dao.impl.<%=GetUpper(SourceTable.Name)%>Dao;
+import <%=nameSpace %>.tool.dao_util.DaoCommonUtil;
+import <%=nameSpace %>.tool.dao_util.DaoOrder;
+import <%=nameSpace %>.tool.dao_util.DaoOrderValue;
+import org.springframework.stereotype.Service;
+import <%=nameSpace %>.service.<%=GetUpper(SourceTable.Name)%>Service;
+import <%=nameSpace %>.tool.service_util.OperationRecordUtil;
+import <%=nameSpace %>.tool.service_util.ServiceCommonUtil;
+import <%=nameSpace %>.tool.service_util.PageBean;
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.TreeMap;
+<% 
+bool isPrint=false;
+string primaryKeyName="";
+ foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name;break; }}
+String showColumns="";
+String entityGet="";
+for(int i=0;i<SourceTable.Columns.Count;i++) { 
+   // if(SourceTable.Columns[i].IsPrimaryKeyMember||isContinue(SourceTable.Columns[i]))
+   //     continue;
+   // else if(i>0&&isPrint){
+  //  }
+    if(SourceTable.Columns[i].IsPrimaryKeyMember) {
+        continue;
+    }
+      if(i>0&&isPrint)
+    {
+        showColumns+=".append(\",\")";
+         entityGet+= ",";
+    }
+    showColumns+=".append(entity."+SourceTable.Columns[i].Name+"__NAME)";
+   entityGet+= "entity.get"+GetUpper(SourceTable.Columns[i].Name)+"()";
+    isPrint=true;
+  
+}
+
+ isPrint=false;
+%>
+/**
+ * @类描述:<%=SourceTable.Description %>
+ * @项目名称:
+ * @类名称:<%=GetUpper(SourceTable.Name)%>ServiceImpl
+ * @创建人:  
+ * @创建时间:<%=DateTime.Now %> 
+ * @修改人:  
+ * @修改时间:
+ * @修改备注: 
+ */
+@Service
+public class <%=GetUpper(SourceTable.Name)%>ServiceImpl implements <%=GetUpper(SourceTable.Name)%>Service{
+    @Resource
+    private <%=GetUpper(SourceTable.Name)%>Dao dao;
+    @Override
+    public <%=GetUpper(SourceTable.Name)%>Entity save(<%=GetUpper(SourceTable.Name)%>Entity entity,Long userId) {
+        try {
+            entity= ServiceCommonUtil.setSaveProerty(entity,userId);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
+        int ret=dao.save(entity);
+        if(ret>0)
+        {
+            OperationRecordUtil.save(entity,userId);
+            return entity;
+        }
+        return null;
+    }
+
+    /**
+     * 修改
+     * @return
+     */
+    @Override
+    public <%=GetUpper(SourceTable.Name)%>Entity update(<%=GetUpper(SourceTable.Name)%>Entity entity,Long userId){
+         int ret=dao.update(entity);
+        if(ret>0)
+        {
+            OperationRecordUtil.update(entity,userId);
+            return entity;
+        }
+        return null;
+    }
+    /**
+     * 修改
+     * param columns 需要修改的列
+     * param primaryKey  主键列
+     * @return
+     */
+    @Override
+    public <%=GetUpper(SourceTable.Name)%>Entity updateWhere(<%=GetUpper(SourceTable.Name)%>Entity entity,Long userId){
+        StringBuffer columns=new StringBuffer();
+        columns<%=showColumns%>;
+        int ret=  dao.update(columns.toString(),"<%=primaryKeyName%>",
+                 <%=entityGet %>);
+        if(ret>0)
+        {
+            OperationRecordUtil.update(entity,userId);
+            return entity;
+        }
+        return null;
+    }
+    /**
+     * 软删除
+     * deleteStatus，1=删除 ,0=正常
+     */
+    @Override
+    public int deleteToUpdateStatus(String id,Long userId) {
+        int ret=  dao.deleteToUpdateStatus(id);
+        if(ret>0)
+        {
+            OperationRecordUtil.updateStatus(<%=GetUpper(SourceTable.Name)%>Entity.class,id,userId);
+            return 1;
+        }else
+            return 0;
+    }
+    /**
+     * 激活一条信息
+     * deleteStatus，1=删除 ,0=正常
+     */
+    @Override
+    public int activationToUpdateStatus(String id,Long userId) {
+          int ret=  dao.activationToUpdateStatus(id);
+        if(ret>0)
+        {
+            OperationRecordUtil.updateStatus(<%=GetUpper(SourceTable.Name)%>Entity.class,id,userId);
+            return 1;
+        }else
+            return 0;
+    }
+
+    /**
+     * 判断属性是否存在
+     * @param wheresAndValues  查询列 查询值
+     * @return -1=没有值，0=不存在，1=存在
+     */
+    @Override
+    public int  isExistsProperty(TreeMap<String,Object> wheresAndValues,Long userId)
+    {
+        Long ret=  dao.isExistsProperty(wheresAndValues);
+            if(ret==null||ret==-1)
+        {
+            return -1;
+        }else
+        if(ret>0)
+        {
+            return 1;
+        }else
+            return 0;
+    }
+    /**
+     * 查询实体对象
+     * @param id
+     * @return
+     */
+    @Override
+    public <%=GetUpper(SourceTable.Name)%>Entity getOne(String id,Long userId)
+    {
+        return dao.getOne(id);
+    }
+
+    /**
+     * 查询实体对象
+     * @param wheresAndValues  查询列 查询值
+     * @return
+     */
+    @Override
+    public <%=GetUpper(SourceTable.Name)%>Entity getOne(TreeMap<String,Object> wheresAndValues,Long userId)
+    {
+        return  dao.getOne(wheresAndValues);
+    }
+
+    @Override
+    public List<<%=GetUpper(SourceTable.Name)%>Entity> findAll(TreeMap<String,Object> wheresAndValues,Long userId) {
+          StringBuffer showColumns=new StringBuffer();
+        Ub_listxsnEntity entity=new Ub_listxsnEntity();
+        showColumns<%=showColumns%>.append(",").append(entity.<%=primaryKeyName%>__NAME);
+        return dao.findAll(showColumns.toString(),wheresAndValues,new DaoOrder(DaoCommonUtil.CREATE_DATE_NAME, DaoOrderValue.DESC));
+    }
+    @Override
+    public List<<%=GetUpper(SourceTable.Name)%>Entity> findAll(Long userId) {
+        return dao.findAll();
+    }
+
+    /**
+     * 查询分页，根据查询条件
+     * @param wheresAndValues 查询条件
+     * @param queryDate  查询开始时间，数据创建时间long类型，精度到微秒，大于数据的创建时间开始查询
+     *                    queryDate 防止用户访问数据时，数据有变动
+     * @param count 查询条数
+     * @return
+     */
+    @Override
+    public List<<%=GetUpper(SourceTable.Name)%>Entity> pageList(TreeMap<String,Object> wheresAndValues, Long queryDate, Integer count,Long userId) {
+          PageBean pageBean= PageUtil.initPage(count);
+        return dao.pageList(wheresAndValues,queryDate,null,pageBean.begin,pageBean.count);
+    }
+    /**
+     * 查询分页，根据查询条件
+     * @param wheresAndValues 查询条件
+     * @param queryDate  查询开始时间，数据创建时间long类型，精度到微秒，大于数据的创建时间开始查询
+     *                   queryDate 防止用户访问数据时，数据有变动
+     * @param page 查询开始页数
+     * @param count 查询条数
+     * @return
+     */
+    @Override
+    public List<<%=GetUpper(SourceTable.Name)%>Entity> pageList(TreeMap<String,Object> wheresAndValues,
+                                           Long queryDate,Integer page, Integer count,Long userId) {
+        StringBuffer showColumns=new StringBuffer();
+        Ub_listxsnEntity entity=new Ub_listxsnEntity();
+        showColumns<%=showColumns%>.append(",").append(entity.<%=primaryKeyName%>__NAME);
+       PageBean pageBean= PageUtil.initPage(page,count);
+        return dao.pageList(wheresAndValues,showColumns.toString(),queryDate,new DaoOrder(DaoCommonUtil.CREATE_DATE_NAME, DaoOrderValue.DESC)
+                ,pageBean.begin,pageBean.count);
+    }
+}
+
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

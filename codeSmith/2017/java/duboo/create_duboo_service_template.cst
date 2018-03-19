@@ -1,0 +1,62 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here."  ResponseEncoding="UTF-8"%>
+
+<%@ Property Name="className" Type="System.String" Category="Strings" Description="类名称" %>
+
+<%@ Property Name="methodInfo" Type="System.String" Category="Custom" Description="方法信息" %>
+
+<%@ Import Namespace="System.Collections.Generic" %>
+<%@ Import Namespace="CodeSmith.Engine.Json" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+package com.hxyc.service.impl;
+
+import com.alibaba.dubbo.config.annotation.Service;
+import com.hxyc.thrift.ApiException;
+import com.hxyc.thrift.Test3;
+import org.apache.thrift.TException;
+
+/**
+ * 创建者 张相伟
+ * 功能
+ */
+@Service
+public class <%=className%>Impl implements <%=className%>.Iface {
+
+    <%
+      //  System.Diagnostics.Debugger.Launch();  
+        System.Diagnostics.Debugger.Break();
+        string[] jsons= methodInfo.Split('~');
+        for(int i=0;i<jsons.Length;i++)
+        {
+        string returnStr="";
+                JObject root = JObject.Parse(jsons[i]);
+                Dictionary<string, string> jsonObjs = new Dictionary<string, string>();
+                  GetDic(root,jsonObjs);
+             returnStr=jsonObjs["return"];%>
+    @Override
+    public <%=returnStr %> <%=jsonObjs["m"] %>(<% int index=0;   foreach (string key in jsonObjs.Keys) {if(key=="m")continue; if(key=="return")break; if(index>0){%><%=","%><%}  %> <%=thriftToJava(jsonObjs[key]) %>  <%= key %> <% index++;}%>) throws ApiException, TException {
+              return <%= getDubooRetStr(returnStr)%>;
+    }
+        <%}
+        %>
+    
+    
+}
+
+
+     
+<!-- #include file="../ScriptTemplate.cst" -->
+<script runat="template" >
+        private string getDubooRetStr(string retStr)
+        {
+            if(retStr=="String")
+                return "null";
+            if(retStr=="int")
+                return "0";
+            return "null";
+        }
+</script>

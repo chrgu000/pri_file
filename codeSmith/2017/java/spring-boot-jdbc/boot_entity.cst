@@ -1,0 +1,102 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.bean;
+<% 
+bool isPrint=false;
+string primaryKeyName="";
+ foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name;break; }}
+String hodeColumns="";
+for(int i=0;i<SourceTable.Columns.Count;i++) { 
+   // if(SourceTable.Columns[i].IsPrimaryKeyMember||isContinue(SourceTable.Columns[i]))
+   //     continue;
+   // else if(i>0&&isPrint){
+  //  }
+    if(SourceTable.Columns[i].IsPrimaryKeyMember) {
+        continue;
+    }
+      if(i>0&&isPrint)
+    {
+        hodeColumns+=",";
+    }
+    hodeColumns+= "\""+SourceTable.Columns[i].Name+"__NAME\"";
+    isPrint=true;
+  
+}
+
+ isPrint=false;
+%>
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import java.util.Date;
+/**
+ * <%= SourceTable.Description %> 
+ */
+//@Entity(name="<%= SourceTable.Name  %>")
+@JsonIgnoreProperties({"<%=primaryKeyName %>__NAME",<%=hodeColumns %>})
+@ApiModel(value="<%= GetUpper( SourceTable.Name)  %>Entity",description=" <%= SourceTable.Description %> ")
+public class <%= GetUpper( SourceTable.Name)  %>Entity implements java.io.Serializable {
+
+      
+	
+    	<% foreach (ColumnSchema column in SourceTable.Columns) { 
+                if(column.IsPrimaryKeyMember){
+                    %>
+                       // @Id
+                    	//@Column(name="<%= getLetterUpper(column.Name)%>")
+                    	private String <%=column.Name%>;
+                    <% 
+                }else{
+                %>
+                    /**
+                     * <%= column.Description %> 
+                     */
+                	//@Column(name="<%=getLetterUpper( column.Name) %>")
+                     @ApiModelProperty(value="<%= column.Description %>",name="<%= column.Name %>",required=false)
+	                private <%=GetJavaTypeUpper(column)%>  <%= column.Name %>;
+                <%}%>
+		<% } %>
+       
+       	<% foreach (ColumnSchema column in SourceTable.Columns) { %>
+                        /**
+                         * <%= column.Description %> 
+                         */
+                		public <%=GetJavaTypeUpper(column)%> get<%= GetUpper(column.Name) %>() { return <%= column.Name %>; }
+                         /**
+                          * <%= column.Description %> 
+                          */
+	                    public void set<%=  GetUpper(column.Name) %>(<%=GetJavaTypeUpper(column)%> <%= column.Name %>) { this.<%= column.Name %> = <%= column.Name %>; }
+               
+		<% } %>
+       
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { %>
+                        /**
+                         * <%= column.Description %> 
+                         */
+                		public  String <%=column.Name%>__NAME="<%=column.Name%>";
+               
+		    <% } %>
+    }
+    
+
+
+
+
+  
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

@@ -1,0 +1,145 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.service.impl;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import <%=nameSpace %>.basecommon.BaseServiceI;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import <%=nameSpace %>.bean.<%=GetUpper(SourceTable.Name)%>;
+import <%=nameSpace %>.dao.<%=GetUpper(SourceTable.Name)%>Dao;
+import <%=nameSpace %>.service.<%=GetUpper(SourceTable.Name)%>Service;
+
+ort <%=nameSpace %>.dao.DaoSupport;
+
+/**
+ * @类描述:<%=SourceTable.Description %>
+ * @项目名称:
+ * @类名称:<%=SourceTable.Name%>Service
+ * @创建人:  
+ * @创建时间:<%=DateTime.Now %> 
+ * @修改人:  
+ * @修改时间:
+ * @修改备注: 
+ */
+@Service
+public class <%=GetUpper(SourceTable.Name)%>ServiceImpl implements AddressService,BaseServiceI< <%=GetUpper(SourceTable.Name)%>Entity,String> {
+
+	@Resource
+	private <%=GetUpper(SourceTable.Name)%>Dao <%=Camel(SourceTable.Name)%>Dao;
+	
+	@Override
+	public List<<%=GetUpper(SourceTable.Name)%>> findAll() {
+		return <%=Camel(SourceTable.Name)%>Dao.findAll();
+	}
+    /**
+	 *  传入排序字段和排序方式
+	 * @param sort 传入排序字段和排序方式
+	 * @return
+	 */
+	@Override
+	public List<<%=GetUpper(SourceTable.Name)%>> findAll(Sort sort) {
+		return <%=Camel(SourceTable.Name)%>Dao.findAll(sort);
+	}
+    /**
+	 * 主键列表
+	 * @param var1
+	 * @return
+	 */
+	@Override
+	public List<<%=GetUpper(SourceTable.Name)%>> findAll(Iterable<String> iterable) {
+		return <%=Camel(SourceTable.Name)%>Dao.findAll(iterable);
+	}
+    /**
+	 * 批量插入或者更新
+	 * @param var1
+	 * @param <S>
+	 * @return
+	 */
+	@Override
+	public <S extends <%=GetUpper(SourceTable.Name)%>> List<S> save(Iterable<S> entitys) {
+		return <%=Camel(SourceTable.Name)%>Dao.save(entitys);
+	}
+
+	@Override
+	public void flush() {
+            <%=Camel(SourceTable.Name)%>Dao.flush();
+	}
+    /**
+	 * 放入缓存并更新
+	 * @param entity
+	 * @param <S>
+	 * @return
+	 */
+	@Override
+	public <S extends <%=GetUpper(SourceTable.Name)%>> S saveAndFlush(S entity) {
+		return <%=Camel(SourceTable.Name)%>Dao.saveAndFlush(entity);
+	}
+    	/**
+	 * 批量删除
+	 * @param var1
+	 */
+	@Override
+	public void deleteInBatch(Iterable<<%=GetUpper(SourceTable.Name)%>> var1) {
+        <%=Camel(SourceTable.Name)%>Dao.deleteInBatch(var1);
+	}
+
+	@Override
+	public void deleteAllInBatch() {
+        <%=Camel(SourceTable.Name)%>Dao.deleteAllInBatch();
+	}
+
+	@Override
+	public <%=GetUpper(SourceTable.Name)%> getOne(Sting id) {
+		return <%=Camel(SourceTable.Name)%>Dao.getOne(id);
+	}
+
+    /**
+	 * 分页查询
+	 * @param var1
+	 * @param sort 排序信息
+	 * @param <S>
+	 * @return
+	 */
+	@Override
+	public <S extends <%=GetUpper(SourceTable.Name)%>> List<S> findAll(Example<S> var1, Sort sort) {
+		return <%=Camel(SourceTable.Name)%>Dao.findAll(var1,sort);
+	}
+
+    
+    /**
+	 * 分页查询
+	 * @param example
+	 * @param <S>
+	 * @return
+	 */
+	@Override
+	public <S extends <%=GetUpper(SourceTable.Name)%>> List<S> findAll(Example<S> example) {
+		return addressDao.findAll(example);
+	}
+}
+
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->
