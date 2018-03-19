@@ -1,0 +1,10 @@
+Mysql 安装完成后临时密码存于 /var/log/mysqld.log文件中。获取自动生成的临时密码
+[root@localhost bin]# grep "password" /var/log/mysqld.log 
+2016-12-26T05:36:59.714175Z 1 [Note] A temporary password is generated for root@localhost: tw=gB-DvY4CI
+
+
+获取临时密码登陆，然后需要强制设置密码（密码需要特殊字符开头）
+alter  user 'root'@'localhost' identified by '#20as3SElksds0ew98';  
+
+设置密码
+ update mysql.user set authentication_string=password('gs963852') where user='root'

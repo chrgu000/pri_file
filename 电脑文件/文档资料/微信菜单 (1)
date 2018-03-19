@@ -1,0 +1,61 @@
+https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxdb356b95aab389ca&redirect_uri=http%3A%2F%2Fwww.gzhxyc.com%2FweixinIndex%2Findex&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect
+
+
+{
+    "button": [
+        {
+            "name": "华夏云城", 
+            "sub_button": [
+ 				{
+                    "type": "view", 
+                    "name": "主页", 
+                    "key": "rselfmenu_0_3", 
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxdb356b95aab389ca&redirect_uri=http%3A%2F%2Fwww.gzhxyc.com%2FweixinIndex%2Findex%3FtabType=1&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect"
+                },
+ 				{
+                    "type": "view", 
+                    "name": "帮扶", 
+                    "key": "rselfmenu_0_2", 
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxdb356b95aab389ca&redirect_uri=http%3A%2F%2Fwww.gzhxyc.com%2FweixinIndex%2Findex%3FtabType=2&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect"
+                },
+                {
+                    "type": "view", 
+                    "name": "动态", 
+                    "key": "rselfmenu_0_1", 
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxdb356b95aab389ca&redirect_uri=http%3A%2F%2Fwww.gzhxyc.com%2FweixinIndex%2Findex%3FtabType=3&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect"
+                },
+                {
+                    "type": "view", 
+                    "name": "我的", 
+                    "key": "rselfmenu_0_0", 
+                    "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxdb356b95aab389ca&redirect_uri=http%3A%2F%2Fwww.gzhxyc.com%2FweixinIndex%2Findex%3FtabType=4&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect"
+                }
+            ]
+        },{
+       
+            "type": "view", 
+            "name": "我要参与", 
+            "key": "rselfmenu_2_1", 
+            "url": "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxdb356b95aab389ca&redirect_uri=http%3A%2F%2Fwww.gzhxyc.com%2FweixinIndex%2Findex%3FtabType=2&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect"
+        },
+         {
+            "name": "关于我们", 
+            "sub_button": [
+           
+                 {
+                    "type": "view", 
+                    "name": "云城特点", 
+                    "key": "rselfmenu_3_1", 
+                    "url": "http://www.gzhxyc.com/static/weixin/include_temp/sysTrait.htm"
+                },
+                {
+                    "type": "view", 
+                    "name": "联系我们", 
+                    "key": "rselfmenu_3_0", 
+                    "url": "http://www.gzhxyc.com/static/weixin/include_temp/cantact.htm"
+                }
+            ]
+          
+        }
+    ]
+}     

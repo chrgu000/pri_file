@@ -1,0 +1,4 @@
+del line   删除行
+SmartType  代码补全提示
+Surround with  代码包围，例如try
+generate      实体类，辅助方法，例如构造函数
