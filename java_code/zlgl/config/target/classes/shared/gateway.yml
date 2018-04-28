@@ -1,0 +1,6 @@
+server:
+  port: 8443
+#  ssl:
+#    key-store: classpath:214101732390016.pfx #证书所在位置的路径
+#    key-password: 214101732390016 #
+#    key-store-password: 214101732390016 docker

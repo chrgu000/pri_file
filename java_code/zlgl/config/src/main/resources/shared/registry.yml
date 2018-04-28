@@ -1,0 +1,20 @@
+security:
+  basic:
+    enabled: true
+  user:
+    name: jky
+    password: GJKtime123
+
+server:
+  port: 18761
+
+eureka:
+  server:
+    enableSelfPreservation: false #关闭自我保护
+    evictionIntervalTimerInMs: 4000 #清理服务时间（默认60*1000） 当前设置4*1000
+  client: #eureka是注册服务端的    同时是服务发现的客户端   以便于启动高可用的服务注册中心
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+       defaultZone: http://jky:GJKtime123@localhost:18761/eureka
+#       defaultZone: http://jky:GJKtime123@${eureka.instance.hostname}:${server.port}/eureka

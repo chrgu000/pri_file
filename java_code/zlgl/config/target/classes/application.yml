@@ -1,0 +1,30 @@
+
+spring:
+  application:
+    name: config
+#  cloud:
+#    config:
+#      server:
+#        git:
+#          uri: http://gitlab.qianchuxing.com:9090/litingjin/testconfig.git
+#          username: 734560600@qq.com
+#          password: ltj734560600
+# 配置文件不放在git上面的时候使用          
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/shared
+  profiles:
+     active: native
+
+server:
+  port: 8888
+
+          
+          
+          
+          
+          
+          
+          
