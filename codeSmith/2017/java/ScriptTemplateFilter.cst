@@ -1,0 +1,146 @@
+﻿<%@ Import Namespace="CodeSmith.Engine.Json" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<script runat="template">
+
+
+/// <summary>
+/// 判断是否过滤字段
+/// </summary>
+/// <param name="column"></param>
+/// <returns></returns>
+public bool isContinue(ColumnSchema column)
+{
+        string prefixStr="";//"TF";                                                              
+      string[] continueStrs={"createBy","CREATE_BY","CREATENAME","CREATEDATE","CREATE_DATE","CREATE_NAME","UPDATEDATE","UPDATE_DATE","UPDATEBY","UPDATE_BY","UPDATENAME","UPDATE_NAME","ID"
+      ,"TFID","tfCreateUserId","TFCREATEUSERID","tfDeleted"
+      ,"tfSysUserId","tfSysRolesId","tfUpdate_UserId","tfUpdate_Date","tfSysDeptId","tfSysUnitId","tfDeleteFlag","tfRemark"
+      ,"tfOrder","tfCreateTime","tfCode"
+      };
+    for(int i=0;i<continueStrs.Length;i++)
+    {
+        if(prefixStr+continueStrs[i].ToUpper()==column.Name.ToUpper())
+            return true;
+    }
+    return false;
+}
+
+
+/// <summary>
+/// 修改方法判断是否过滤字段
+/// </summary>
+/// <param name="column"></param>
+/// <returns></returns>
+public bool editIsContinue(string colName)
+{
+        string prefixStr="";//"TF";                                                              
+      string[] continueStrs={"create_time","id"};
+    for(int i=0;i<continueStrs.Length;i++)
+    {
+        if(prefixStr+continueStrs[i].ToUpper()==colName.ToUpper())
+            return true;
+    }
+    return false;
+}
+/// <summary>
+/// 判断是否是dropDownListStr字段
+/// </summary>
+/// <param name="dropDownListStr"></param>
+/// <param name="isCode">判断true=code还是false=name</param>
+/// <param name="column"></param>
+/// <returns></returns>
+public string isDropDownListStr(string dropDownListStr,bool isCode,string colName )
+{
+     if(dropDownListStr.IndexOf("[")==-1)
+        return "";
+    JArray root = JArray.Parse(dropDownListStr);
+    string ii="";
+     for (int j=0;j<root.Count;j++)
+    {
+        JToken jj=root[j];
+        ii= jj["name"].ToString();
+        if(!isCode&&jj["name"].ToString()==colName)
+            return jj["code"].ToString();
+        else if(isCode&&jj["code"].ToString()==colName)
+            return jj["name"].ToString();
+    }
+      
+   return  "";
+}
+/// <summary>
+/// jsp页面添加方法判断是否过滤字段
+/// </summary>
+/// <param name="column"></param>
+/// <param name="isCode">是否code 0是不做判断，1是code，2是name</param>
+/// <returns></returns>
+public bool addIsContinue(ColumnSchema column,string dropDownListStr,int isCode)
+{
+        string prefixStr="";//"TF";                                                              
+      string[] continueStrs={"ID","create_time","update_time","creater","is_delete","CREATE_NAME"
+      ,"TFID","tfCreateUserId","TFCREATEUSERID","tfDeleted"
+      ,"tfSysUserId","tfSysRolesId","tfSysDeptId"
+      ,"tfUpdate_UserId","tfUpdate_Date"
+      ,"tfSysUnitId","tfDeleteFlag","tfCreateTime"
+      };
+    for(int i=0;i<continueStrs.Length;i++)
+    {
+        if(prefixStr+continueStrs[i].ToUpper()==column.Name.ToUpper())
+            return true;
+    }
+    if(isCode==2&&isDropDownListStr(dropDownListStr,false,column.Name)!="")
+    {
+        return true;
+    }
+    return false;
+}
+/// <summary>
+/// 判断是否是默认时间值
+/// </summary>
+/// <returns></returns>
+public bool createTimeDefault(string colName){ 
+    string prefixStr="";//"TF";                                                              
+    string[] continueStrs={"create_time","update_time"};
+    for(int i=0;i<continueStrs.Length;i++)
+    {
+        if(prefixStr+continueStrs[i].ToUpper()==colName.ToUpper())
+            return true;
+    }
+    return false;
+}
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

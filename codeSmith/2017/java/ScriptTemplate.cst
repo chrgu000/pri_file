@@ -15,6 +15,35 @@ public string GetUpper(string str)
 	str=str.Substring(0,1).ToUpper()+str.Substring(1);
 	return str;
 }
+// 去除_符号，首字母小写
+public string GetAttributeCamel(string str)
+{
+	string[] strs=str.Split('_');
+     str="";
+    for(int i=0;i<strs.Length;i++)
+    {
+          if(i==0){
+             str+=Camel(strs[i]);
+        }else
+             str+=GetUpper(strs[i]);
+    }
+    	return str;
+}
+// 去除_符号，首字母大写,第一个字母大写
+public string GetUpperCamel(string str)
+{
+	string[] strs=str.Split('_');
+     str="";
+    for(int i=0;i<strs.Length;i++)
+    {
+        if(i==0){
+             str+=GetUpper(strs[i]);
+        }else
+             str+=GetUpper(strs[i]);
+    }
+    	return str;
+}
+
 public string getT_Table(string str)
 {
 	str=str.Substring(2);
@@ -115,80 +144,122 @@ public string jeecg_Column_Camel(string str)
 
 
 
-public string GetCSType(ColumnSchema column)
+
+//获取mybatis类型
+public string GetMysqltoMybatisTypeUpper(string colName,DbType dbtype)
 {
-	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	if (colName.EndsWith("TypeCode")) return colName;
 	
-	switch (column.DataType)
+	switch (dbtype)
 	{
-		case DbType.AnsiString: return "string";
-		case DbType.AnsiStringFixedLength: return "string";
-		case DbType.Binary: return "byte[]";
-		case DbType.Boolean: return "bool";
-		case DbType.Byte: return "byte";
-		case DbType.Currency: return "decimal";
-		case DbType.Date: return "DateTime";
-		case DbType.DateTime: return "DateTime";
-		case DbType.Decimal: return "decimal";
-		case DbType.Double: return "double";
+		case DbType.AnsiString: return "VARCHAR";
+		case DbType.AnsiStringFixedLength: return "VARCHAR";
+		case DbType.Binary: return "Byte[]";
+		case DbType.Boolean: return "BIT";
+		case DbType.Byte: return "INTEGER";  
+		case DbType.Currency: return "DOUBLE";
+		case DbType.Date: return "TIMESTAMP";
+		case DbType.DateTime: return "TIMESTAMP";
+		case DbType.Decimal: return "DOUBLE";
+		case DbType.Double: return "DOUBLE";
 		case DbType.Guid: return "Guid";
-		case DbType.Int16: return "short";
-		case DbType.Int32: return "int";
-		case DbType.Int64: return "long";
-		case DbType.Object: return "object";
-		case DbType.SByte: return "sbyte";
-		case DbType.Single: return "float";
-		case DbType.String: return "string";
-		case DbType.StringFixedLength: return "string";
-		case DbType.Time: return "TimeSpan";
-		case DbType.UInt16: return "ushort";
-		case DbType.UInt32: return "uint";
-		case DbType.UInt64: return "ulong";
-		case DbType.VarNumeric: return "decimal";
+		case DbType.Int16: return "INTEGER";
+		case DbType.Int32: return "INTEGER";
+		case DbType.Int64: return "BIGINT";
+		case DbType.Object: return "Object";
+		case DbType.SByte: return "INTEGER";
+		case DbType.Single: return "FLOAT";
+		case DbType.String: return "VARCHAR";
+		case DbType.StringFixedLength: return "VARCHAR";
+		case DbType.Time: return "TIMESTAMP";
+		case DbType.UInt16: return "INTEGER";
+		case DbType.UInt32: return "INTEGER";
+		case DbType.UInt64: return "BIGINT";
+		case DbType.VarNumeric: return "NUMERIC";
 		default:
 		{
-			return "__UNKNOWN__" + column.NativeType;
+			return "VARCHAR";
+		}
+	}
+} 
+
+
+public string GetJavaFullTypeUpper(string colName,DbType dbType)
+{
+	if (colName.EndsWith("TypeCode")) return colName;
+	
+	switch (dbType)
+	{
+		case DbType.AnsiString: return "java.lang.String";
+		case DbType.AnsiStringFixedLength: return "java.lang.String";
+		case DbType.Binary: return "java.lang.Byte[]";
+		case DbType.Boolean: return "java.lang.Boolean";
+		case DbType.Byte: return "java.lang.Integer";
+		case DbType.Currency: return "java.lang.Double";
+		case DbType.Date: return "java.sql.Date";
+		case DbType.DateTime: return "java.util.Date";
+		case DbType.Decimal: return "java.lang.Double";
+		case DbType.Double: return "java.lang.Double";
+		case DbType.Guid: return "java.lang.Guid";
+		case DbType.Int16: return "java.lang.short";
+		case DbType.Int32: return "java.lang.Integer";
+		case DbType.Int64: return "java.lang.Long";
+		case DbType.Object: return "java.lang.Object";
+		case DbType.SByte: return "java.lang.Integer";
+		case DbType.Single: return "java.lang.Float";
+		case DbType.String: return "java.lang.String";
+		case DbType.StringFixedLength: return "java.lang.String";
+		case DbType.Time: return "java.sql.Time";
+		case DbType.UInt16: return "java.lang.Integer";
+		case DbType.UInt32: return "java.lang.Integer";
+		case DbType.UInt64: return "java.lang.Long";
+		case DbType.VarNumeric: return "java.lang.Double";
+		default:
+		{
+			return "String";
 		}
 	}
 }
 
 
-public string GetJavaTypeUpper(ColumnSchema column)
+
+public string GetJavaTypeUpper(string colName,DbType dbType)
 {
-	if (column.Name.EndsWith("TypeCode")) return column.Name;
+	if (colName.EndsWith("TypeCode")) return colName;
 	
-	switch (column.DataType)
+	switch (dbType)
 	{
 		case DbType.AnsiString: return "String";
 		case DbType.AnsiStringFixedLength: return "String";
-		case DbType.Binary: return "Byte[]";
+		case DbType.Binary: return "Integer[]";
 		case DbType.Boolean: return "Boolean";
-		case DbType.Byte: return "Byte";
+		case DbType.Byte: return "Integer";
 		case DbType.Currency: return "Double";
-		case DbType.Date: return "DateTime";
+		case DbType.Date: return "java.sql.Date";
 		case DbType.DateTime: return "Date";
 		case DbType.Decimal: return "Double";
 		case DbType.Double: return "Double";
 		case DbType.Guid: return "Guid";
 		case DbType.Int16: return "short";
-		case DbType.Int32: return "int";
+		case DbType.Int32: return "Integer";
 		case DbType.Int64: return "Long";
 		case DbType.Object: return "Object";
-		case DbType.SByte: return "SByte";
+		case DbType.SByte: return "Integer";
 		case DbType.Single: return "Float";
 		case DbType.String: return "String";
 		case DbType.StringFixedLength: return "String";
-		case DbType.Time: return "TimeSpan";
-		case DbType.UInt16: return "int";
-		case DbType.UInt32: return "int";
+		case DbType.Time: return "java.sql.Time";
+		case DbType.UInt16: return "Integer";
+		case DbType.UInt32: return "Integer";
 		case DbType.UInt64: return "Long";
 		case DbType.VarNumeric: return "Double";
 		default:
 		{
-			return "__UNKNOWN__" + column.NativeType;
+			return "String";
 		}
 	}
 }
+
 
 public string convertColumnType(ColumnSchema column)
 {
@@ -391,122 +462,7 @@ public string GetSqlserverDefaultStr(ColumnSchema column)
 	}
 }
 
-/// <summary>
-/// 判断是否过滤字段
-/// </summary>
-/// <param name="column"></param>
-/// <returns></returns>
-public bool isContinue(ColumnSchema column)
-{
-        string prefixStr="";//"TF";                                                              
-      string[] continueStrs={"createBy","CREATE_BY","CREATENAME","CREATEDATE","CREATE_DATE","CREATE_NAME","UPDATEDATE","UPDATE_DATE","UPDATEBY","UPDATE_BY","UPDATENAME","UPDATE_NAME","ID"
-      ,"TFID","tfCreateUserId","TFCREATEUSERID","tfDeleted"
-      ,"tfSysUserId","tfSysRolesId","tfUpdate_UserId","tfUpdate_Date","tfSysDeptId","tfSysUnitId","tfDeleteFlag","tfRemark"
-      ,"tfOrder","tfCreateTime","tfCode"
-      };
-    for(int i=0;i<continueStrs.Length;i++)
-    {
-        if(prefixStr+continueStrs[i].ToUpper()==column.Name.ToUpper())
-            return true;
-    }
-    return false;
-}
 
-/// <summary>
-/// 修改方法判断是否过滤字段
-/// </summary>
-/// <param name="column"></param>
-/// <returns></returns>
-public bool editIsContinue(ColumnSchema column)
-{
-        string prefixStr="";//"TF";                                                              
-      string[] continueStrs={"createBy","CREATE_BY","CREATENAME","CREATEDATE","CREATE_DATE","CREATE_NAME"
-      ,"TFID","tfCreateUserId","TFCREATEUSERID","tfDeleted"
-      ,"tfSysUserId","tfSysRolesId","tfSysDeptId"
-      ,"tfCreateTime","tfCode"
-      };
-    for(int i=0;i<continueStrs.Length;i++)
-    {
-        if(prefixStr+continueStrs[i].ToUpper()==column.Name.ToUpper())
-            return true;
-    }
-    return false;
-}
-/// <summary>
-/// 判断是否是dropDownListStr字段
-/// </summary>
-/// <param name="dropDownListStr"></param>
-/// <param name="isCode">判断true=code还是false=name</param>
-/// <param name="column"></param>
-/// <returns></returns>
-public string isDropDownListStr(string dropDownListStr,bool isCode,ColumnSchema column )
-{
-     if(dropDownListStr.IndexOf("[")==-1)
-        return "";
-    JArray root = JArray.Parse(dropDownListStr);
-    string ii="";
-     for (int j=0;j<root.Count;j++)
-    {
-        JToken jj=root[j];
-        ii= jj["name"].ToString();
-        if(!isCode&&jj["name"].ToString()==column.Name)
-            return jj["code"].ToString();
-        else if(isCode&&jj["code"].ToString()==column.Name)
-            return jj["name"].ToString();
-    }
-      
-   return  "";
-}
-/// <summary>
-/// jsp页面添加方法判断是否过滤字段
-/// </summary>
-/// <param name="column"></param>
-/// <param name="isCode">是否code 0是不做判断，1是code，2是name</param>
-/// <returns></returns>
-public bool addIsContinue(ColumnSchema column,string dropDownListStr,int isCode)
-{
-        string prefixStr="";//"TF";                                                              
-      string[] continueStrs={"createBy","CREATE_BY","CREATENAME","CREATEDATE","CREATE_DATE","CREATE_NAME"
-      ,"TFID","tfCreateUserId","TFCREATEUSERID","tfDeleted"
-      ,"tfSysUserId","tfSysRolesId","tfSysDeptId"
-      ,"tfUpdate_UserId","tfUpdate_Date"
-      ,"tfSysUnitId","tfDeleteFlag","tfCreateTime"
-      };
-    for(int i=0;i<continueStrs.Length;i++)
-    {
-        if(prefixStr+continueStrs[i].ToUpper()==column.Name.ToUpper())
-            return true;
-    }
-    if(isCode==2&&isDropDownListStr(dropDownListStr,false,column)!="")
-    {
-        return true;
-    }
-    return false;
-}
-public string createHtmlCtrl(ColumnSchema column,string dropDownListStr)
-{
-
-        if(column.Name =="tfCode"){
-            return  "<c:choose>"+
-						"<c:when test=\"${not empty pd.TFID}\">"+
-							"<input class=\""+getTypeClass(column)+"\" style='width:95%;' type=\"text\" name=\""+column.Name+"\" id=\""+column.Name+"\" value=\"${pd."+column.Name+" }\" readonly=\"readonly\"/>"+
-						"</c:when>"+
-						"<c:otherwise>"+
-							"<input class=\"inputCode\" style='width:95%;' type=\"text\" name=\""+column.Name+"\" id=\""+column.Name+"\" value=\"${pd."+column.Name+" }\" maxlength=\""+ sqlTypeLength(column) +"\" onblur=\"uniqueValidate(this.value,'',this,'"+column.Description+"')\" placeholder=\"这里输入"+column.Description+"\" title=\""+column.Description+"\"/>"+
-						"</c:otherwise>"+
-					"</c:choose>";
-                }else if(column.Description.IndexOf("日期")>-1||column.Name.IndexOf("date")>-1||column.Description.IndexOf("时间")>-1){
-                     return   " <input class=\"span10 date-picker\" name=\""+column.Name+"\" id=\""+column.Name+"\" value=\"${pd."+column.Name+" }\" type=\"text\" onfocus=\"WdatePicker({el:'"+column.Name+"',dateFmt:'yyyy-MM-dd'})\" readonly=\"readonly\" style=\"width:88px;\" placeholder=\""+column.Description+"\"/>";
-                }else if(isDropDownListStr(dropDownListStr,true,column)!=""){
-                     return   "	<select style='width:80%;' name=\""+column.Name+"\" id=\""+column.Name+"\" class=\"chzn-select\" > <option value=\"\">--请选择--</option> </select>";
-                }
-                //else if(column.DataType==DbType.StringFixedLength){
-                //     return   "	<textarea style='width:80%;' name=\""+column.Name+"\" id=\""+column.Name+"\" class=\"chzn-select\" > </textarea>";
-                //}
-                else{
-                     return   "<input class=\""+getTypeClass(column)+"\" style='width:99%;' type=\"text\" name=\""+column.Name+"\" id=\""+column.Name+"\" value=\"${pd."+column.Name+" }\" maxlength=\""+ sqlTypeLength(column) +"\" scale=\""+column.Scale+"\"  placeholder=\"这里输入"+column.Description+"\" title=\""+column.Description+"\"/>";
-                }
-}
 
 /***
 * 输出下拉框逻辑代码
@@ -516,7 +472,7 @@ public string getDropDownListCtrl(ColumnSchemaCollection columns,string dropDown
     string str="";
     for(int i=0;i< columns.Count;i++){
         //str=str+ columns[i].Name;
-        string name=isDropDownListStr(dropDownListStr,true,columns[i]);
+        string name=isDropDownListStr(dropDownListStr,true,columns[i].Name);
         if(name!=""){
              str=str+ "$(\"#"+columns[i].Name+"\").chosen({\n"+
 				"no_results_text: \"没有找到结果！\",\n"+
@@ -560,6 +516,306 @@ public int sqlTypeLength(ColumnSchema column)
         return column.Size/3;
     return column.Size;
 }
+
+public string getMybatisInsert(TableSchema SourceTable)
+{
+    string retStr="";
+    
+   for(int i=0;i<SourceTable.Columns.Count;i++) {
+       string colNmae=SourceTable.Columns[i].Name;
+       string nowStr="";
+       if(createTimeDefault(colNmae)){
+           nowStr="now()"; 
+       }else{
+         nowStr="#{"+GetAttributeCamel(colNmae)+",jdbcType="+GetMysqltoMybatisTypeUpper(colNmae,SourceTable.Columns[i].DataType)+"}" ;  
+       }
+       if(i+1!=SourceTable.Columns.Count)
+           nowStr=nowStr+",";
+       if((i+1)%4==0){
+           nowStr=nowStr+"\r\n";
+       }
+       retStr=retStr+nowStr;
+    }
+    return retStr;
+}
+
+ 
+
+/// <summary>
+/// 获取mpping 的更新语句字符
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getMybatisUpdateSet(TableSchema SourceTable)
+{
+   string retStr="";
+    for(int i=0;i<SourceTable.Columns.Count;i++) {
+        string nowStr="";
+         ColumnSchema  column=SourceTable.Columns[i];
+        if(editIsContinue(column.Name)){
+           nowStr ="" ;
+        }else{
+           nowStr=  ""+column.Name +"= #{"+GetAttributeCamel(column.Name)+",jdbcType="+GetMysqltoMybatisTypeUpper(column.Name,column.DataType)+"}"; 
+        }
+        
+        if(i+1!=SourceTable.Columns.Count&&nowStr!=""){
+            nowStr=nowStr+",";
+        }
+          if((i+1)%3==0){
+           nowStr=nowStr+"\r\n";
+       }
+        if(i+1==SourceTable.Columns.Count&&nowStr==""){
+             retStr=retStr.Substring(0,retStr.Length-1);
+        }else{
+             retStr=retStr+nowStr;
+        }
+        
+    }
+    return retStr;
+}
+
+/// <summary>
+/// 处理getEntityExampleStr 的单个字段信息
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getEntityExampleColumnStr(string colName,DbType dataType)
+{
+     string name= GetAttributeCamel(colName);
+    string methodName=GetUpperCamel(colName);
+    string javaType=GetJavaTypeUpper(colName,dataType);
+    string typeAndName=javaType+" "+name;
+    string nowStr="";
+    nowStr=nowStr+"public Criteria and"+methodName+"IsNull() {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+" is null\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"IsNotNull() {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+" is not null\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"EqualTo("+typeAndName+") {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+"=\", "+name+",\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"NotEqualTo("+typeAndName+") {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+" <> \", "+name+",\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"GreaterThan("+typeAndName+") {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+" > \", "+name+",\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"GreaterThanOrEqualTo("+typeAndName+") {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+" >= \", "+name+",\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"LessThan("+typeAndName+") {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+" < \", "+name+",\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";       
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"LessThanOrEqualTo("+typeAndName+") {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+" <= \", "+name+",\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";  
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"Like("+typeAndName+") {\r\n";
+    nowStr=nowStr+"    addCriterion(\""+colName+" like \", "+name+",\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";  
+    
+    nowStr=nowStr+"public Criteria and"+methodName+"NotLike("+typeAndName+") {\r\n"; 
+    nowStr=nowStr+"    addCriterion(\""+colName+" not like \", "+name+",\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";  
+    
+          nowStr=nowStr+"public Criteria and"+methodName+"In(List<"+javaType+"> values) {\r\n"; 
+    nowStr=nowStr+"    addCriterion(\""+colName+" in \", values,\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";  
+    
+          nowStr=nowStr+"public Criteria and"+methodName+"NotIn(List<"+javaType+"> values) {\r\n"; 
+    nowStr=nowStr+"    addCriterion(\""+colName+" not in \", values,\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";  
+    
+          nowStr=nowStr+"public Criteria and"+methodName+"Between("+javaType+" value1, "+javaType+" value2) {\r\n"; 
+    nowStr=nowStr+"    addCriterion(\""+colName+" between \", value1,value2,\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";  
+    
+          nowStr=nowStr+"public Criteria and"+methodName+"NotBetween("+javaType+" value1, "+javaType+" value2) {\r\n"; 
+    nowStr=nowStr+"    addCriterion(\""+colName+" not between \", value1,value2,\""+name+"\");\r\n";
+    nowStr=nowStr+"return (Criteria) this;\r\n";
+    nowStr=nowStr+"}\r\n";  
+    nowStr=nowStr+"private "+javaType+" "+name+";\r\n";
+    return nowStr;
+}
+
+/// <summary>
+/// 获取实体 Mybatis Example字符
+/// </summary>
+/// <param name="SourceTable">表 信息</param>
+///  <param name="SourceView">视图信息</param>
+/// <returns></returns>
+public string getEntityExampleStr(TableSchema SourceTable,ViewSchema SourceView)
+{
+   string retStr="";
+    if(SourceTable!=null)
+    for(int i=0;i<SourceTable.Columns.Count;i++) {
+       
+        retStr=retStr+getEntityExampleColumnStr(SourceTable.Columns[i].Name,SourceTable.Columns[i].DataType);
+    }
+    if(SourceView!=null)
+    for(int i=0;i<SourceTable.Columns.Count;i++) {
+       
+        retStr=retStr+getEntityExampleColumnStr(SourceTable.Columns[i].Name,SourceTable.Columns[i].DataType);
+    }
+    return retStr;
+}
+/// <summary>
+/// 获取实体 swggier 类型字符
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getEntitySwggingStr(TableSchema SourceTable,bool isEnable,bool isAdd)
+{
+   string retStr="";
+    for(int i=0;i<SourceTable.Columns.Count;i++) {
+         if(isAdd&&addIsContinue(SourceTable.Columns[i],"",0)){
+            continue;
+        }
+        string name=GetAttributeCamel(SourceTable.Columns[i].Name);  
+        string javaType=GetJavaTypeUpper(SourceTable.Columns[i].Name,SourceTable.Columns[i].DataType);
+        string isNullCol= !SourceTable.Columns[i].AllowDBNull+""; 
+        string description=SourceTable.Columns[i].Description.Replace("\r\n","").Replace("\n","").Replace("\"","\\\"");
+        string dbType=SourceTable.Columns[i].DataType+"";  
+        int length=SourceTable.Columns[i].Size;
+        string maxNum="0";
+        string enableStr="";
+        if(!isEnable&&!SourceTable.Columns[i].IsPrimaryKeyMember){
+            enableStr="//";
+        }
+        string nowStr=enableStr+"@ApiModelProperty(name = \""+name+"\", notes = \""+description+"\", dataType = \""+javaType+"\", required = "+GetAttributeCamel(isNullCol)+")\r\n";
+        if(dbType=="Int64"){
+            maxNum="9223372036854775807L";
+        }else  if(dbType=="Int32"){
+             maxNum="999999999";
+        }else  if(dbType=="SByte"){ 
+            maxNum="99";
+        }
+        if(maxNum!="0"){
+             nowStr=enableStr+"@ApiModelProperty(name = \""+name+"\", notes = \""+description+",赋值范围在0 到 "+maxNum+"之间！\", dataType = \""+javaType+"\", required = "+GetAttributeCamel(isNullCol)+")\r\n";
+             nowStr=nowStr+enableStr+"@Min(value = 0,message = \""+description+"("+name+") 限制最小值为0\")\r\n"; 
+             nowStr=nowStr+enableStr+"@Max(value = "+maxNum+",message = \""+description+"("+name+") 限制最大值为"+maxNum+"\")\r\n"; 
+        }
+        if(javaType=="Date"){	
+            nowStr=nowStr+enableStr+"@DateTimeFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")\r\n";
+            nowStr=nowStr+enableStr+"@JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\",timezone=\"GMT+8\")\r\n";  
+        }else       
+        if(length>0){
+            if(javaType=="String"){
+                length=length/3;
+            }
+            nowStr=nowStr+enableStr+"@Size(min = 1, max = "+length+", message = \""+description+"("+name+")长度在1-"+length+"之间\")\r\n";
+        }
+        if(!SourceTable.Columns[i].AllowDBNull){
+            if(javaType=="String"){
+                nowStr=nowStr+enableStr+"@NotEmpty(message = \""+description+"("+name+")不能为空！\")\r\n";
+            }else
+                nowStr=nowStr+enableStr+"@NotNull(message = \""+description+"("+name+")不能为空！\")\r\n";
+        }
+        nowStr=nowStr+enableStr+"private "+javaType+" "+name+";\r\n";
+        retStr=retStr+nowStr;
+    }
+    return retStr;
+}
+/// <summary>
+/// 获取实体 getset 字符
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getEntityGetSetStr(TableSchema SourceTable,bool isEnable,bool isAdd)
+{
+   string retStr="";
+    for(int i=0;i<SourceTable.Columns.Count;i++) {
+        if(isAdd&&addIsContinue(SourceTable.Columns[i],"",0)){
+            continue;
+        }
+        string enableStr="";
+        if(!isEnable&&!SourceTable.Columns[i].IsPrimaryKeyMember){
+            enableStr="//";
+        }
+        string name= GetAttributeCamel(SourceTable.Columns[i].Name);
+        string methodName=GetUpperCamel(SourceTable.Columns[i].Name);
+        string javaType=GetJavaTypeUpper(SourceTable.Columns[i].Name,SourceTable.Columns[i].DataType);
+        string isNullCol= SourceTable.Columns[i].AllowDBNull+"";
+        string nowStr=enableStr+"public "+javaType+" get"+methodName+"() { return "+name+"; }\r\n";
+        nowStr=nowStr+enableStr+"public void set"+methodName+"("+javaType+" "+name+") { this."+name+"="+name+"; }\r\n";
+        retStr=retStr+nowStr;
+    }
+    return retStr;
+}
+
+
+
+/// <summary>
+/// 获取实体 getset  保存时 字符
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getEntityGetSetInsertStr(TableSchema SourceTable)
+{
+   string retStr="";
+    for(int i=0;i<SourceTable.Columns.Count;i++) {
+         if(addIsContinue(SourceTable.Columns[i],"",0)){
+            continue;
+        }
+        string name= GetAttributeCamel(SourceTable.Columns[i].Name);
+        string methodName=GetUpperCamel(SourceTable.Columns[i].Name);
+        string javaType=GetJavaTypeUpper(SourceTable.Columns[i].Name,SourceTable.Columns[i].DataType);
+        string isNullCol= SourceTable.Columns[i].AllowDBNull+"";
+        string nowStr="public "+javaType+" get"+methodName+"() { return "+name+"; }\r\n";
+        nowStr=nowStr+"public void set"+methodName+"("+javaType+" "+name+") { this."+name+"="+name+"; }\r\n";
+        retStr=retStr+nowStr;
+    }
+    return retStr;
+}
+/// <summary>
+/// 获取实体 全参数构造函数  字符
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getEntityConstructorStr(TableSchema SourceTable,string tableName)
+{
+   string retStr=" public "+tableName+"Entity";
+    string paramStr="";
+    string setValues="";
+    for(int i=0;i<SourceTable.Columns.Count;i++) {
+         
+        string name= GetAttributeCamel(SourceTable.Columns[i].Name);
+        string methodName=GetUpperCamel(SourceTable.Columns[i].Name);
+        string javaType=GetJavaTypeUpper(SourceTable.Columns[i].Name,SourceTable.Columns[i].DataType);
+        string isNullCol= SourceTable.Columns[i].AllowDBNull+"";
+        paramStr=paramStr+javaType+" "+name+"";
+        setValues=setValues+"this."+name+"="+name+";\r\n";
+        if(SourceTable.Columns.Count!=i+1){
+            paramStr=paramStr+",";
+        }
+    }
+    retStr=retStr+"("+paramStr+"){\r\n";
+    retStr=retStr+setValues+"\r\n";
+    retStr=retStr+"}\r\n";
+    return retStr;
+}
+
 
 </script>
 

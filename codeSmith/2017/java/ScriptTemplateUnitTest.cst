@@ -1,0 +1,113 @@
+﻿<%@ Import Namespace="CodeSmith.Engine.Json" %>
+<%@ Import Namespace="CodeSmith.Engine.Json.Linq" %>
+<script runat="template">
+
+/// <summary>
+/// 获取单元测试的数据库类型的值
+/// </summary>
+/// <param name="dbtype">数据类型</param>
+/// <param name="colDesc">字段说明</param>
+/// <returns></returns>
+public string getUnitTestValue(DbType dbtype,string colDesc,string colName)
+{
+	if (colName.EndsWith("TypeCode")) return colName;
+	
+	switch (dbtype)
+	{
+		case DbType.AnsiString: return colDesc;
+		case DbType.AnsiStringFixedLength: return colDesc;
+		case DbType.Binary: return "Byte[]";
+		case DbType.Boolean: return "true";
+		case DbType.Byte: return "1";  
+		case DbType.Currency: return "1.1";
+		case DbType.Date: return "new java.sql.Date(System.currentTimeMillis()).toString()";
+		case DbType.DateTime: return "DateUtil.dateConvertStr(new Date())";
+		case DbType.Decimal: return "1.1";
+		case DbType.Double: return "1.1";
+		case DbType.Guid: return "UUID.randomUUID()";
+		case DbType.Int16: return "1";
+		case DbType.Int32: return "1";
+		case DbType.Int64: return "1L";
+		case DbType.Object: return "Object";
+		case DbType.SByte: return "1"; 
+		case DbType.Single: return "1F";
+		case DbType.String: return colDesc;
+		case DbType.StringFixedLength: return colDesc;
+		case DbType.Time: return "new java.sql.Time(System.currentTimeMillis()).toString()";
+		case DbType.UInt16: return "1";
+		case DbType.UInt32: return "1";
+		case DbType.UInt64: return "1L";
+		case DbType.VarNumeric: return "1.1";
+		default:
+		{
+			return colDesc;
+		}
+	}
+}
+
+
+/// <summary>
+/// 获取单元测试的值 字符
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getUnitTestValue(TableSchema SourceTable,bool isEnable,bool isAdd,string startStr)
+{
+   string retStr="";
+   int count=SourceTable.Columns.Count;
+    for(int i=0;i<count;i++) {
+        if(isAdd&&addIsContinue(SourceTable.Columns[i],"",0)){
+            continue;
+        }
+        string enableStr="";
+        if(!isEnable&&!SourceTable.Columns[i].IsPrimaryKeyMember){
+            enableStr="//";
+        }
+        string name= GetAttributeCamel(SourceTable.Columns[i].Name);
+        string methodName=GetUpperCamel(SourceTable.Columns[i].Name);
+        string javaType=GetJavaTypeUpper(SourceTable.Columns[i].Name,SourceTable.Columns[i].DataType);
+        string isNullCol= SourceTable.Columns[i].AllowDBNull+"";
+        string description=SourceTable.Columns[i].Description.Replace("\r\n","").Replace("\n","").Replace("\"","\\\"");
+        string nowStr=enableStr+startStr+"="+startStr+"+\"\\\""+name+"\\\":";
+   
+        if(javaType=="String"){
+            nowStr=nowStr+"\\\""+getUnitTestValue(SourceTable.Columns[i].DataType,description,name)+"\\\"";
+        }else if(javaType=="Date"||javaType=="java.sql.Date"||javaType=="java.sql.Time"){
+            nowStr=nowStr+"\\\"\"+"+getUnitTestValue(SourceTable.Columns[i].DataType,description,name)+"+\"\\\"";
+        }else{
+            nowStr=nowStr+"\\\""+getUnitTestValue(SourceTable.Columns[i].DataType,description,name)+"\\\"";
+        }
+        if(count!=i+1){ 
+            nowStr=nowStr+",";
+        }
+         nowStr=nowStr+"\";\r\n";
+         retStr=retStr+nowStr;
+    }
+    return retStr;
+}
+
+/// <summary>
+/// 获取单元测试的分页参数的值 字符
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getUnitTestPageInfoValue(string startStr)
+{
+   string retStr=startStr+"="+startStr+"+\"\\\"pageIndex\\\":1,\\\"pageSize\\\":10,\"; \r\n";
+      
+    return retStr;
+}
+/// <summary>
+/// 获取单元测试的去除最后一个逗号的值 字符
+/// </summary>
+/// <param name="SourceTable"></param>
+/// <returns></returns>
+public string getUnitTestDelCommaValue(string startStr)
+{
+   string retStr="if("+startStr+".substring("+startStr+".length()-1,"+startStr+".length()).equals(\",\")){\r\n";
+        retStr=retStr+" "+startStr+"="+startStr+".substring(0,"+startStr+".length()-1);\r\n";
+    return retStr=retStr+"}\r\n";
+}
+
+
+</script>
