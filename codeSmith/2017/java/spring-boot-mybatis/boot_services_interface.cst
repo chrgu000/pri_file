@@ -1,0 +1,115 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="SourceView" Type="SchemaExplorer.ViewSchema" Category="Context" Description="ViewName" Optional="True"  %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="ns_start" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%
+bool isPrint=false;
+ string primaryKeyName=""; 
+string primaryKeyType="";
+string primaryJdbcType="";
+string userAndTypeBindOut="";
+string userIdBindOut="";
+string tableNameSource="";
+string tableNameEntity="";
+string tableDescribe="";
+if(SourceTable!=null){
+    tableNameSource=SourceTable.Name;
+    tableNameEntity=GetUpperCamel(SourceTable.Name);
+    tableDescribe=SourceTable.Description;
+}else{
+     tableNameSource=SourceView.Name;
+    tableNameEntity=GetUpperCamel(SourceView.Name);
+}
+ foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name; primaryKeyType = GetJavaTypeUpper(column.Name,column.DataType);primaryJdbcType=GetMysqltoMybatisTypeUpper(column.Name,column.DataType);   break; }}
+String showColumns="";
+String entityGet="";
+string pkAndType=" "+primaryKeyType+" "+primaryKeyName;
+ if(1==2)
+ { //输出 用户id绑定信息
+     userAndTypeBindOut=" ,String userId";
+     userIdBindOut=",userId";
+ }
+ %>
+package <%=nameSpace %>.service;
+
+import <%=nameSpace %>.entity.<%=tableNameEntity%>Entity;
+import <%=nameSpace %>.entity.<%=tableNameEntity%>Example;
+import org.apache.ibatis.annotations.Param;
+import <%=ns_start %>.comutil.PageInfo;
+import <%=ns_start %>.comutil.entity.ErrorReturn;
+import java.util.List;
+
+/**
+ * @Author: 系统生成
+ * @Date: <%= DateTime.Now %>
+ * @Description: <%=tableDescribe %> Service层接口
+ * @updater:
+ * @update date:
+ */
+public interface <%=tableNameEntity%>Service {
+    
+    /**
+     * 根据条件查询列表
+     * @param <%=primaryKeyName %> 主键查询
+     */
+     <%=tableNameEntity%>Entity selectByPrimaryKey(<%=pkAndType%>);
+    /**
+     * 根据条件查询列表
+     * @param key 查询key
+     * @param pageInfo 自定义的分页page参数
+     */
+    com.github.pagehelper.PageInfo selectByExample(String key, PageInfo pageInfo);
+
+  <% if(SourceTable!=null){%>
+     ErrorReturn insert(<%=tableNameEntity%>Entity record);
+    /**
+     * 批量添加
+     */
+    ErrorReturn inserts(List<<%=tableNameEntity%>Entity> list);
+     /**
+     * 插入特定条件值
+     */
+    ErrorReturn insertSelective(<%=tableNameEntity%>Entity record);
+    
+    /**
+     * 删除
+     */
+    ErrorReturn deleteByPrimaryKey(<%=pkAndType%>);
+   /**
+     * 软删除
+     */
+    ErrorReturn updateStatusToDel(<%=pkAndType%>);  
+   
+    
+    /**
+     * 根据主键按照条件更新
+     */
+    ErrorReturn updateByPrimaryKeySelective(<%=tableNameEntity%>Entity record);
+
+    /**
+     * 根据主键全部信息更新
+     */
+    ErrorReturn updateByPrimaryKey(<%=tableNameEntity%>Entity record);
+    <%} %>
+    
+}
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplateFilter.cst" -->
+<!-- #include file="../ScriptTemplate.cst" -->

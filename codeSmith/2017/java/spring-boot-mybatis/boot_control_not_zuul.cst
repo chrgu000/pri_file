@@ -1,0 +1,254 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+package <%=nameSpace %>.controller;
+
+
+import <%=nameSpace %>.bean.<%=GetUpper(SourceTable.Name)%>Entity;
+import <%=nameSpace %>.service.<%=GetUpper(SourceTable.Name)%>Service;
+import <%=nameSpace %>.tool.controller_util.Message;
+import <%=nameSpace %>.tool.controller_util.MessageRetType;
+import <%=nameSpace %>.tool.controller_util.VerificationPermissionsUtil;
+import <%=nameSpace %>.tool.dao_util.DaoCommonUtil;
+import <%=nameSpace %>.tool.dao_util.PageBean;
+import <%=nameSpace %>.tool.service_util.VerificationPermissionsType;
+
+import io.swagger.annotations.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.TreeMap;
+<% 
+bool isPrint=false;
+string primaryKeyName="";
+string primaryKeyType="";
+string userAndTypeBindOut="";
+string userIdBindOut="";
+ foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name; primaryKeyType = GetJavaTypeUpper(column);   break; }}
+String showColumns="";
+String entityGet="";
+string pkAndType=" "+primaryKeyType+" "+primaryKeyName;
+ if(1==2)
+ { //输出 用户id绑定信息
+     userAndTypeBindOut=" ,String userId";
+     userIdBindOut=",userId";
+ }
+ %>
+/**
+ * <%= SourceTable.Description %> 
+ */
+@RestController
+@Api(value = "<%=Camel(SourceTable.Name)%>Controller", description = "<%= SourceTable.Description %>")
+@RequestMapping("/<%=Camel(SourceTable.Name)%>Controller")
+public class <%=GetUpper(SourceTable.Name)%>Controller {
+    @Resource
+    private <%=GetUpper(SourceTable.Name)%>Service service;
+
+    @ApiOperation(value="描述实体信息，不可调用无返回", notes="")
+    @RequestMapping(value="/entityDescrible",method={ RequestMethod.GET})
+    public <%=GetUpper(SourceTable.Name)%>Entity entityDescrible(@RequestBody @ApiParam(name="entity",value="" ,required=true) <%=GetUpper(SourceTable.Name)%>Entity entity) {
+        return null;
+    }
+
+    /**
+     * 保存
+     * @param entity
+     * @param userId
+     * @param userName
+     * @return
+     */
+    @ApiOperation(value="保存", notes="注意问题点这个描述")
+    @RequestMapping(value="/save",method={RequestMethod.POST, RequestMethod.GET})
+    public Message save( <%=GetUpper(SourceTable.Name)%>Entity entity) {
+        // if( !VerificationPermissionsUtil.verification(VerificationPermissionsType.SAVE,userId))
+        //   return VerificationPermissionsUtil.returnFailMsg();
+        entity=  service.save(entity<%=userIdBindOut%>);
+        if(entity==null)
+        {
+            return new Message(MessageRetType.FAIL.getValue(),"操作失败！",null);
+        }else{
+            return new Message(MessageRetType.SUCCESS.getValue(),"保存成功！",entity);
+        }
+    }
+
+    /**
+     * 修改
+     * @return
+     */
+    @ApiOperation(value="修改", notes="注意问题点这个描述")
+    @RequestMapping(value="/update",method={RequestMethod.POST, RequestMethod.GET})
+    public Message update(@ApiParam(value="entity",name="用户对象，传递实体对应的属性，就会自动赋值",required=true)<%=GetUpper(SourceTable.Name)%>Entity entity){
+        // if( !VerificationPermissionsUtil.verification(VerificationPermissionsType.UPDATE,userId))
+        //      return VerificationPermissionsUtil.returnFailMsg();
+        entity=  service.updateWhere(entity
+        // ,userId
+        );
+        if(entity==null)
+        {
+            return new  Message(MessageRetType.FAIL.getValue(),"操作失败！",null);
+        }else{
+            return new Message(MessageRetType.SUCCESS.getValue(),"修改成功！",entity);
+        }
+    }
+    /**
+     * 冻结
+     */
+    @ApiOperation(value="冻结", notes="注意问题点这个描述")
+    @RequestMapping(value="/frozen",method={RequestMethod.POST, RequestMethod.GET})
+    public Message frozen(
+    @ApiParam(value="id",name="主键id",required=true)<%=pkAndType%>) {
+        // if( !VerificationPermissionsUtil.verification(VerificationPermissionsType.DELETE,userId))
+        //   return VerificationPermissionsUtil.returnFailMsg();
+        int ret=  service.deleteToUpdateStatus(<%=primaryKeyName%> <%=userIdBindOut%>);
+        if(ret==0)
+        {
+            return new  Message(MessageRetType.FAIL.getValue(),"操作失败！",null);
+        }else{
+            return new Message(MessageRetType.SUCCESS.getValue(),"修改成功！",null);
+        }
+    }
+    /**
+     * 激活一条信息
+     */
+    @ApiOperation(value="激活", notes="注意问题点这个描述")
+    @RequestMapping(value="/activation",method={RequestMethod.POST, RequestMethod.GET})
+    public Message activation(@ApiParam(value="id",name="主键id",required=true)<%=pkAndType%>) {
+       //  if( !VerificationPermissionsUtil.verification(VerificationPermissionsType.DELETE,userId))
+       //     return VerificationPermissionsUtil.returnFailMsg();
+        int ret=  service.deleteToUpdateStatus(<%=primaryKeyName%><%=userIdBindOut%>);
+        if(ret==0)
+        {
+            return new  Message(MessageRetType.FAIL.getValue(),"操作失败！",null);
+        }else{
+            return new Message(MessageRetType.SUCCESS.getValue(),"修改成功！",null);
+        }
+    }
+
+    /**
+     * 判断属性是否存在
+     * @return
+     */
+    @ApiOperation(value="判断属性是否存在", notes="注意问题点这个描述")
+    @RequestMapping(value="/isExistsProperty",method={RequestMethod.POST, RequestMethod.GET})
+    public Message  isExistsProperty(@ApiParam(value="entity",name="用户对象，传递实体对应的属性，就会自动赋值",required=true)<%=GetUpper(SourceTable.Name)%>Entity entity) {
+        // if( !VerificationPermissionsUtil.verification(VerificationPermissionsType.SEARCH,userId))
+         //    return VerificationPermissionsUtil.returnFailMsg();
+        TreeMap<String,Object> wheresAndValues=new TreeMap<>();
+        int ret=  service.isExistsProperty(wheresAndValues
+      // ,userId
+        );
+        if(ret<0)
+        {
+            return new  Message(MessageRetType.FAIL.getValue(),"查询异常！",null);
+        }
+        if(ret==0)
+        {
+            return new  Message(MessageRetType.SUCCESS.getValue(),"值不存在！",MessageRetType.VALUE_NOT_EXISTS);
+        }else{
+            return new Message(MessageRetType.SUCCESS.getValue(),"值已存在！",MessageRetType.VALUE_EXISTS);
+        }
+    }
+    /**
+     * 查询实体对象
+     * @return
+     */
+    @ApiOperation(value="查询单个实体信息", notes="注意问题点这个描述")
+    @RequestMapping(value="/getOne",method={RequestMethod.POST, RequestMethod.GET})
+    public Message getOne(@ApiParam(value="entity",name="用户对象，传递实体对应的属性，就会自动赋值",required=true)<%=GetUpper(SourceTable.Name)%>Entity entity) {
+        // if( !VerificationPermissionsUtil.verification(VerificationPermissionsType.SEARCH,userId))
+        //     return VerificationPermissionsUtil.returnFailMsg();
+        entity= service.getOne(entity.getId()
+        // ,userId
+        );
+        if(entity==null)
+        {
+            return new  Message(MessageRetType.FAIL.getValue(),"操作失败！",null);
+        }else{
+            return new Message(MessageRetType.SUCCESS.getValue(),"操作成功！",entity);
+        }
+    }
+
+    @ApiOperation(value="查询条件对应的所有数据", notes="查询条件对应的所有数据")
+    @RequestMapping(value="/findAll",method={RequestMethod.POST, RequestMethod.GET})
+    public Message findAll(
+            @ApiParam(value="entity",name="用户对象，传递实体对应的属性，就会自动赋值",required=true)<%=GetUpper(SourceTable.Name)%>Entity entity){
+        // if( !VerificationPermissionsUtil.verification(VerificationPermissionsType.SEARCH,userId))
+        //     return VerificationPermissionsUtil.returnFailMsg();
+        TreeMap<String,Object> wheresAndValues=new TreeMap<>();
+        //TODO 添加查询条件
+        List<<%=GetUpper(SourceTable.Name)%>Entity> entities= service.findAll(wheresAndValues
+        // ,userId
+        );
+        if(entities==null)
+        {
+            return new  Message(MessageRetType.FAIL.getValue(),"操作失败！",null);
+        }else{
+            return new Message(MessageRetType.SUCCESS.getValue(),"操作成功！",entities);
+        }
+    }
+
+
+    /**
+     * 查询分页，根据查询条件
+     * @param queryDate  查询开始时间，数据创建时间long类型，精度到微秒，大于数据的创建时间开始查询
+     *                   queryDate 防止用户访问数据时，数据有变动
+     * @param page 查询开始页数
+     * @param count 查询条数
+     * @return
+     */
+    @ApiOperation(value=" 查询分页，根据查询条件", notes=" 查询分页，根据查询条件")
+    @RequestMapping(value="/pageList",method={RequestMethod.POST, RequestMethod.GET})
+    public Message pageList(
+            @ApiParam(value="entity",name="用户对象，传递实体对应的属性，就会自动赋值",required=true)<%=GetUpper(SourceTable.Name)%>Entity entity,
+            @ApiParam(value="queryIndex",name="查询开始索引，上次调用最后一条数据索引，queryIndex 防止用户访问数据时，数据有变动",required=false)
+                    long queryIndex,
+            @ApiParam(value="page",name="分页页数，0开始",required=false)Integer page,
+            @ApiParam(value="count",name="每页显示行数",required=false)Integer count) {
+        // if( !VerificationPermissionsUtil.verification(VerificationPermissionsType.SEARCH,userId))
+        //    return VerificationPermissionsUtil.returnFailMsg();
+        TreeMap<String,Object> wheresAndValues=new TreeMap<>();
+        //TODO 添加查询条件
+        //wheresAndValues.put(entity.tfDeleteFlag__NAME, DaoCommonUtil.STATUS_ACTIVATION);
+        PageBean pageBean= service.pageList(wheresAndValues,queryIndex,page,count
+        // ,userId
+        );
+        if(pageBean==null)
+        {
+            return new  Message(MessageRetType.FAIL.getValue(),"操作失败！",null);
+        }else if(pageBean.totalCount!=null&&pageBean.totalCount>0)
+        {
+            return new Message(MessageRetType.SUCCESS.getValue(),"操作成功！",pageBean);
+        }else{
+            return new Message(MessageRetType.SUCCESS.getValue(),"无数据！",MessageRetType.VALUE_NOT_EXISTS);
+        }
+
+    }
+
+}
+
+ 
+ 
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

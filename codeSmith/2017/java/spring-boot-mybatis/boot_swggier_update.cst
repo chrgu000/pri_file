@@ -1,0 +1,74 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName"   Optional="True" %>
+<%@ Property Name="SourceView" Type="SchemaExplorer.ViewSchema" Category="Context" Description="ViewName" Optional="True"  %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+ <%
+bool isPrint=false;
+ string primaryKeyName=""; 
+string primaryKeyType="";
+string primaryJdbcType="";
+string userAndTypeBindOut="";
+string userIdBindOut="";
+string tableNameSource="";
+string tableNameEntity="";
+string tableDescribe="";
+if(SourceTable!=null){
+    tableNameSource=SourceTable.Name;
+    tableNameEntity=GetUpperCamel(SourceTable.Name);
+     tableDescribe=SourceTable.Description;
+}else{
+     tableNameSource=SourceView.Name;
+    tableNameEntity=GetUpperCamel(SourceView.Name);
+}
+ foreach (ColumnSchema column in SourceTable.Columns) {%> <% if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name; primaryKeyType = GetJavaTypeUpper(column.Name,column.DataType);primaryJdbcType=GetMysqltoMybatisTypeUpper(column.Name,column.DataType);   break; }}
+String showColumns="";
+String entityGet="";
+string pkAndType=" "+primaryKeyType+" "+primaryKeyName;
+ if(1==2)
+ { //输出 用户id绑定信息
+     userAndTypeBindOut=" ,String userId";
+     userIdBindOut=",userId";
+ }
+ %>
+package <%=nameSpace %>.entity.param.update;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.util.Date;
+/**
+ * <%=tableDescribe %>  修改对象
+ */
+@ApiModel(value = "Update<%=tableNameEntity%>Param", description = "<%=tableDescribe %>修改对象")
+public class Update<%=tableNameEntity%>Param {
+     private  <%=pkAndType %>;
+     <% if(SourceTable!=null){ %>
+     <%=getEntitySwggingStr(SourceTable,true,true) %>
+     <% }  %> 
+     public void set<%=GetUpperCamel(primaryKeyName) %>(<%=pkAndType %>){
+        this.<%=primaryKeyName %>=<%=primaryKeyName %>;
+     }
+     public <%=primaryKeyType %> get<%=GetUpperCamel(primaryKeyName) %>(){
+         return <%=primaryKeyName %>;
+     }
+     <% if(SourceTable!=null){ %>
+     <%=getEntityGetSetStr(SourceTable,true,true) %>
+     <% }  %>   
+    
+
+}
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplateFilter.cst" -->
+<!-- #include file="../ScriptTemplate.cst" -->

@@ -1,0 +1,85 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Debug="False" ResponseEncoding="UTF-8" %>
+<%@ Property Name="SampleStringProperty" Default="SomeValue" Type="System.String" %>
+<%@ Property Name="SampleBooleanProperty" Default="True" Type="System.Boolean" %>
+
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="请选择你要生成的表，可以多选！" %>
+<%--FileOutputStream--%>
+
+<%@ Property Name="ns_start" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+<%@ Register Name="boot_control_test" Template="boot_control-test.cst"  MergeProperties="False" ExcludeProperties="" %> 
+
+<% %> 
+<script runat="template">
+  
+        
+        public void Generate()
+        { 
+            foreach(TableSchema table in this.SourceTables){
+                String fileName=GetUpperCamel(table.Name); 
+                
+                    CodeTemplate st=new boot_control_test();
+                    CreateTemplate(st,fileName+"Test.java",table,false,"test");
+                
+            }
+        } 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="temp"></param>
+        /// <param name="fileName"></param>  
+        /// <param name="table"></param>
+        /// <param name="isDDL">是否需要处理下拉框</param>
+        public void CreateTemplate(CodeTemplate temp,string fileName,TableSchema table,bool isDDL,string filePath)
+        {
+            //System.Diagnostics.Debugger.Launch();  
+            System.Diagnostics.Debugger.Break();
+                       CodeTemplate st =temp;
+            string outputFile1 = "";
+        
+        	st.SetProperty("SourceTable",table);
+        	st.SetProperty("nameSpace",nameSpace);
+            st.SetProperty("ns_start",ns_start);
+            String outFilePath="D:\\CodeCreate\\spring_boot\\0334\\"+filePath+"\\"+fileName;
+           
+            outputFile1 = string.Format(outFilePath);
+            st.RenderToFile(outputFile1,true);
+             
+            
+        }
+
+// My methods here.
+public string SampleMethod()
+{
+  return "Method output.";
+}
+</script>
+<!-- #include file="../ScriptTemplateFilter.cst" -->
+<!-- #include file="../ScriptTemplate.cst" -->
+
+ <%
+// [{"code":"tfProjectCode","name":"tfProjectName"},{"code":"tfBidSectionId","name":"tfBidSectionName"}]-->
+//System.Diagnostics.Debugger.Launch();  
+this.Generate(); 
+    foreach(TableSchema table in this.SourceTables){
+                String fileName=GetUpper(table.Name);
+                %><%= table.Name %> <%= table.Description%><%
+            
+            }
+
+%>  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

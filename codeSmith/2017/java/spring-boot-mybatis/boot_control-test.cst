@@ -1,0 +1,182 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SpringBootApplicationName" Type="System.String" Default="Application" Optional="True" Category="Strings" Description="springboot启动类名称" %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="SourceView" Type="SchemaExplorer.ViewSchema" Category="Context" Description="ViewName" Optional="True"  %>
+<%@ Property Name="ns_start" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%
+bool isPrint=false;
+ string primaryKeyName=""; 
+string primaryKeyType="";
+string primaryJdbcType="";
+string userAndTypeBindOut="";
+string userIdBindOut="";
+string tableNameSource="";
+string tableNameEntity="";
+string camelTableObj="";
+string tableDescribe="";
+if(SourceTable!=null){
+    tableNameSource=SourceTable.Name;
+    tableNameEntity=GetUpperCamel(SourceTable.Name);
+    tableDescribe=SourceTable.Description;
+    camelTableObj=GetAttributeCamel(SourceTable.Name);
+}else{
+     tableNameSource=SourceView.Name;
+    tableNameEntity=GetUpperCamel(SourceView.Name);
+    camelTableObj=GetAttributeCamel(SourceView.Name);
+}
+ foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name; primaryKeyType = GetJavaTypeUpper(column.Name,column.DataType);primaryJdbcType=GetMysqltoMybatisTypeUpper(column.Name,column.DataType);   break; }}
+String showColumns="";
+String entityGet="";
+string pkAndType=" "+primaryKeyType+" "+primaryKeyName;
+ if(1==2)
+ { //输出 用户id绑定信息
+     userAndTypeBindOut=" ,String userId";
+     userIdBindOut=",userId";
+ }
+ %>
+ 
+package <%=nameSpace %>;
+
+import com.alibaba.fastjson.JSON;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import <%=ns_start %>.comutil.DateUtil;
+import java.util.Date;
+
+/**
+ * @Author: 
+ * @Date: <%= DateTime.Now %>
+ * @Description: <%=tableDescribe %> 测试类  
+ * @updater:
+ * @update date:
+ */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = OpendataDataApplication.class)//这里的Application是springboot的启动类名。
+@WebAppConfiguration
+public class <%=tableNameEntity%>Test {
+    
+    Logger logger = LoggerFactory.getLogger(<%=tableNameEntity%>Test.class);
+   	@Autowired
+	private WebApplicationContext context;
+	private MockMvc mockMvc;
+    @Before
+	public void setUp(){
+		mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+	}
+    
+    //查询对象
+    @Test
+	public void testSelectOne() throws Exception{
+    
+        
+        String selectByPrimaryKeyJson="{";
+        <%=getUnitTestValue(SourceTable,false,false,"selectByPrimaryKeyJson") %>
+         <%=getUnitTestDelCommaValue("selectByPrimaryKeyJson") %>
+        selectByPrimaryKeyJson=selectByPrimaryKeyJson+"}";
+		MvcResult mvcResult = mockMvc.perform(
+				post("/<%=tableNameEntity%>/selectByPrimaryKey")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(selectByPrimaryKeyJson))
+				.andReturn();
+        logger.info("--------------------查询对象----------------------------------"+mvcResult.getResponse().getContentAsString());
+    }
+    //分页查询
+    @Test
+	public void testSelectPage() throws Exception{
+        String listSelectJson="{";
+        <%=getUnitTestPageInfoValue("listSelectJson") %>
+        <%=getUnitTestValue(SourceTable,false,false,"listSelectJson") %>
+        <%=getUnitTestDelCommaValue("listSelectJson") %>
+        listSelectJson=listSelectJson+"}";
+		MvcResult mvcResult = mockMvc.perform(
+				post("/<%=tableNameEntity%>/listSelect")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(listSelectJson))
+				.andReturn();
+        logger.info("--------------------分页查询----------------------------------"+mvcResult.getResponse().getContentAsString());
+    }
+    //新增数据接口
+    @Test
+	public void testInsert() throws Exception{
+        //新增数据接口
+         String insertJson="{";
+        <%=getUnitTestValue(SourceTable,true,true,"insertJson") %>
+        <%=getUnitTestDelCommaValue("insertJson") %>
+        insertJson=insertJson+"}";
+		MvcResult mvcResult = mockMvc.perform(
+				post("/<%=tableNameEntity%>/insert")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(insertJson))
+				.andReturn();
+        logger.info("--------------------新增数据接口----------------------------------"+mvcResult.getResponse().getContentAsString());
+    }
+    //删除数据接口
+    @Test
+	public void testDelete() throws Exception{
+         //删除数据接口
+         String deleteJson="{";
+        <%=getUnitTestValue(SourceTable,false,false,"deleteJson") %>
+        <%=getUnitTestDelCommaValue("deleteJson") %>
+        deleteJson=deleteJson+"}";
+		MvcResult mvcResult = mockMvc.perform(
+				post("/<%=tableNameEntity%>/delete")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(deleteJson))
+				.andReturn();
+        logger.info("--------------------删除数据接口----------------------------------"+mvcResult.getResponse().getContentAsString());
+    }
+    //修改数据接口
+    @Test
+	public void testUpdate() throws Exception{
+          //修改数据接口
+         String updateJson="{";
+        <%=getUnitTestValue(SourceTable,true,false,"updateJson") %>
+        <%=getUnitTestDelCommaValue("updateJson") %> 
+        updateJson=updateJson+"}";
+		 MvcResult mvcResult = mockMvc.perform(
+				post("/<%=tableNameEntity%>/update")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(updateJson))
+				.andReturn();
+        logger.info("--------------------修改数据接口----------------------------------"+mvcResult.getResponse().getContentAsString());
+        
+	}
+    
+ 
+    
+}
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplateFilter.cst" -->
+<!-- #include file="../ScriptTemplate.cst" -->
+<!-- #include file="../ScriptTemplateUnitTest.cst" -->

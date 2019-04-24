@@ -1,0 +1,237 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="<%=GetUpper(SourceTable.Name)%>Mapper">
+	
+	
+	<!-- 新增 -->
+	<insert id="save" parameterType="pd">
+		insert into <%=SourceTable.Name%>(
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		<%= column.Name %>,<!-- <%= column.Description %> -->
+		<% } %>
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		<%= column.Name.ToUpper() %>
+		<% }} %>
+		) values (
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		#{<%= column.Name %>},<!-- <%= column.Description %> -->
+		<% } %>
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember){ %>
+		#{<%= column.Name.ToUpper() %>}
+		<% } }%>
+		)
+	</insert>
+
+
+<!-- 批量添加 -->
+	<insert id="saveAll" parameterType="java.util.List" useGeneratedKeys="true">
+		insert into <%=SourceTable.Name%>(
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		<%= column.Name %>,<!-- <%= column.Description %> -->
+		<% } %>
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		<%= column.Name.ToUpper() %>
+		<% }} %>
+		) values
+		<foreach collection="list" item="item" index="index" separator="," > 
+		 (
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		'${item.<%= column.Name %>}',<!-- <%= column.Description %> -->
+		<% } %>
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember){ %>
+		'${item.<%= column.Name.ToUpper() %>}'
+		<% } }%>
+		)
+		 </foreach> 
+	</insert>
+
+
+
+	
+	
+	<!-- 删除-->
+	<delete id="delete" parameterType="pd">
+		delete from <%=SourceTable.Name%>
+		where <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		<%= column.Name.ToUpper() %>=  #{<%= column.Name.ToUpper() %>}
+		<% }} %>
+	</delete>
+	<!-- 软删除 -->
+	<update id="forgeryDel" parameterType="pd">
+		update  <%=SourceTable.Name%>
+			set tfDeleteFlag=2
+			where <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		<%= column.Name.ToUpper() %>=  #{<%= column.Name.ToUpper() %>}
+		<% }} %>
+	</update>
+	
+	
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		update  <%=SourceTable.Name%>
+			set 
+		<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember||editIsContinue(column))continue;%>
+		<if test="<%= column.Name %>!=null and <%= column.Name %>!=''">
+			<%= column.Name %>=#{<%= column.Name %>},<!-- <%= column.Description %> -->
+		</if>
+		<% } %><% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		<%= column.Name.ToUpper() %>= <%= column.Name.ToUpper() %>
+		<% }} %>
+			where <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		<%= column.Name.ToUpper() %>=  #{<%= column.Name.ToUpper() %>}
+		<% }} %>
+	</update>
+	
+	
+	<!-- 通过ID获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select 
+				<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		<%= column.Name %>,<!-- <%= column.Description %> -->
+		<% } %>
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		<%= column.Name.ToUpper() %>
+		<% }} %>
+		from 
+			<%=SourceTable.Name%>
+		where  <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		<%= column.Name.ToUpper() %>=  #{<%= column.Name.ToUpper() %>}
+		<% }} %>
+	</select>
+	<!-- 查询属性值是否存在 -->
+	<select id="propertyExists" parameterType="pd" resultType="pd">
+		SELECT 1 FROM <%=SourceTable.Name%> 
+		WHERE 1=1
+	   <% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		<if test="<%= column.Name %>!=null and <%= column.Name %>!=''">
+			and <%= column.Name %>= #{<%= column.Name %>}<!-- <%= column.Description %> -->
+		</if>
+		<% } %>
+	</select>
+
+	<!-- ͨ查询最大的排序 -->
+	<select id="findMaxOrder" parameterType="pd" resultType="pd">
+		select MAX(tfOrder) tfOrder
+		from 
+			<%=SourceTable.Name%>
+<!--		where tfMeasurementId = #{tfMeasurementId} -->
+	</select>
+	
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		select
+				<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		a.<%= column.Name %>,<!-- <%= column.Description %> -->
+		<% } %>
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		a.<%= column.Name.ToUpper() %>
+		<% }} %>
+		from 
+				<%=SourceTable.Name%> a
+		where 1=1
+		<if test="pd.field1!=null and pd.field1!=''">
+			and (a.tfName  like CONCAT('%',#{pd.field1},'%'))
+		</if>
+		  <if test="pd.lastLoginStart!= null and pd.lastLoginStart != ''">
+			and a.tfCreateTime&gt;#{pd.lastLoginStart}
+		  </if>
+		  <if test="pd.lastLoginEnd != null and pd.lastLoginEnd != ''">
+			and	a.tfCreateTime &lt;#{pd.lastLoginEnd}
+		  </if>
+		<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		<if test="pd.<%= column.Name %>!=null and pd.<%= column.Name %>!=''">
+			and a.<%= column.Name %>= #{pd.<%= column.Name %>}<!-- <%= column.Description %> -->
+		</if>
+		<% } %>
+			<if test="pd.tfDeleteFlag==null or pd.tfDeleteFlag==''">
+			and a.tfDeleteFlag= 1<!-- 删除标识：记录是否删除：1：未删除，2：已删除。默认未删除。 -->
+		</if>
+		order by a.tfOrder
+	</select>
+	
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		select
+				<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		a.<%= column.Name %>,<!-- <%= column.Description %> -->
+		<% } %>
+        	<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) {%>
+		a.<%= column.Name.ToUpper() %>
+        <% }} %>
+		from 
+				<%=SourceTable.Name%> a
+		where 1=1
+			<if test="field1!=null and field1!=''">
+			and (a.tfName  like CONCAT('%',#{field1},'%')
+		</if>
+		  <if test="lastLoginStart!= null and lastLoginStart != ''">
+			and a.tfCreateTime&gt;#{lastLoginStart}
+		  </if>
+		  <if test="lastLoginEnd != null and lastLoginEnd != ''">
+			and	a.tfCreateTime &lt;#{lastLoginEnd}
+		  </if>
+		<% foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember)continue;%>
+		<if test="<%= column.Name %>!=null and <%= column.Name %>!=''">
+			and a.<%= column.Name %>= #{<%= column.Name %>} <!-- <%= column.Description %> -->
+		</if>
+		<% } %>
+			<if test="tfDeleteFlag==null or tfDeleteFlag==''">
+			and a.tfDeleteFlag= 1<!-- 删除标识：记录是否删除：1：未删除，2：已删除。默认未删除。 -->
+		</if>
+		order by a.tfOrder
+	</select>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from <%=SourceTable.Name%>
+		where 
+			TFID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	<!-- 批量软删除 -->
+	<update id="forgeryDelAll" parameterType="pd">
+		update  <%=SourceTable.Name%>
+			set tfDeleteFlag=2
+		where 
+			TFID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</update>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->

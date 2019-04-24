@@ -1,0 +1,151 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName"   Optional="True" %>
+<%@ Property Name="SourceView" Type="SchemaExplorer.ViewSchema" Category="Context" Description="ViewName" Optional="True"  %>
+<%@ Property Name="ns_start" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+ <%
+bool isPrint=false;
+ string primaryKeyName=""; 
+string primaryKeyType="";
+string primaryJdbcType="";
+string userAndTypeBindOut="";
+string userIdBindOut="";
+string tableNameSource="";
+string tableNameEntity="";
+string tableDescribe="";
+if(SourceTable!=null){
+    tableNameSource=SourceTable.Name;
+    tableNameEntity=GetUpperCamel(SourceTable.Name);
+     tableDescribe=SourceTable.Description;
+}else{
+     tableNameSource=SourceView.Name;
+    tableNameEntity=GetUpperCamel(SourceView.Name);
+}
+ foreach (ColumnSchema column in SourceTable.Columns) {%> <% if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name; primaryKeyType = GetJavaTypeUpper(column.Name,column.DataType);primaryJdbcType=GetMysqltoMybatisTypeUpper(column.Name,column.DataType);   break; }}
+String showColumns="";
+String entityGet="";
+string pkAndType=" "+primaryKeyType+" "+primaryKeyName;
+ if(1==2)
+ { //输出 用户id绑定信息
+     userAndTypeBindOut=" ,String userId";
+     userIdBindOut=",userId";
+ }
+ %>
+package <%=nameSpace %>.entity;
+
+import <%=ns_start %>.comutil.example_mybatis.MybatisCriterion;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+/**
+ * <%=tableDescribe %>查询工具类 
+ */
+public class <%=tableNameEntity %>Example {
+    protected String orderByClause;
+    protected boolean distinct;
+    protected List<Criteria> oredCriteria;
+    public <%=tableNameEntity %>Example() {
+        oredCriteria = new ArrayList<Criteria>();
+    }
+    public void setOrderByClause(String orderByClause) {
+        this.orderByClause = orderByClause;
+    }
+    public String getOrderByClause() {
+        return orderByClause;
+    }
+    public void setDistinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+    public boolean isDistinct() {
+        return distinct;
+    }
+    public List<Criteria> getOredCriteria() {
+        return oredCriteria;
+    }
+    public void or(Criteria criteria) {
+        oredCriteria.add(criteria);
+    }
+    public Criteria or() {
+        Criteria criteria = createCriteriaInternal();
+        oredCriteria.add(criteria);
+        return criteria;
+    }
+    public Criteria createCriteria() {
+        Criteria criteria = createCriteriaInternal();
+        if (oredCriteria.size() == 0) {
+            oredCriteria.add(criteria);
+        }
+        return criteria;
+    }
+    protected Criteria createCriteriaInternal() {
+        Criteria criteria = new Criteria();
+        return criteria;
+    }
+    public void clear() {
+        oredCriteria.clear();
+        orderByClause = null;
+        distinct = false;
+    }
+    protected abstract static class GeneratedCriteria {
+        protected List<MybatisCriterion> criteria;
+
+        protected GeneratedCriteria() {
+            super();
+            criteria = new ArrayList<MybatisCriterion>();
+        }
+
+        public boolean isValid() {
+            return criteria.size() > 0;
+        }
+
+        public List<MybatisCriterion> getAllCriteria() {
+            return criteria;
+        }
+
+        public List<MybatisCriterion> getCriteria() {
+            return criteria;
+        }
+
+        protected void addCriterion(String condition) {
+            if (condition == null) {
+                throw new RuntimeException("Value for condition cannot be null");
+            }
+            criteria.add(new MybatisCriterion(condition));
+        }
+
+        protected void addCriterion(String condition, Object value, String property) {
+            if (value == null) {
+                throw new RuntimeException("Value for " + property + " cannot be null");
+            }
+            criteria.add(new MybatisCriterion(condition, value));
+        }
+
+        protected void addCriterion(String condition, Object value1, Object value2, String property) {
+            if (value1 == null || value2 == null) {
+                throw new RuntimeException("Between values for " + property + " cannot be null");
+            }
+            criteria.add(new MybatisCriterion(condition, value1, value2));
+        }
+
+        <%=getEntityExampleStr(SourceTable,SourceView) %>
+   }
+   public static class Criteria extends GeneratedCriteria {
+
+        protected Criteria() {
+            super(); 
+        }
+    }
+}
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplateFilter.cst" -->
+<!-- #include file="../ScriptTemplate.cst" -->

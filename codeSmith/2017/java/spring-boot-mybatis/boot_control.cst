@@ -1,0 +1,238 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="SourceView" Type="SchemaExplorer.ViewSchema" Category="Context" Description="ViewName" Optional="True"  %>
+<%@ Property Name="ns_start" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%
+bool isPrint=false;
+ string primaryKeyName=""; 
+string primaryKeyType="";
+string primaryJdbcType="";
+string userAndTypeBindOut="";
+string userIdBindOut="";
+string tableNameSource="";
+string tableNameEntity="";
+string camelTableObj="";
+string tableDescribe="";
+if(SourceTable!=null){
+    tableNameSource=SourceTable.Name;
+    tableNameEntity=GetUpperCamel(SourceTable.Name);
+    tableDescribe=SourceTable.Description;
+    camelTableObj=GetAttributeCamel(SourceTable.Name);
+}else{
+     tableNameSource=SourceView.Name;
+    tableNameEntity=GetUpperCamel(SourceView.Name);
+    camelTableObj=GetAttributeCamel(SourceView.Name);
+}
+ foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name; primaryKeyType = GetJavaTypeUpper(column.Name,column.DataType);primaryJdbcType=GetMysqltoMybatisTypeUpper(column.Name,column.DataType);   break; }}
+String showColumns="";
+String entityGet="";
+string pkAndType=" "+primaryKeyType+" "+primaryKeyName;
+ if(1==2)
+ { //输出 用户id绑定信息
+     userAndTypeBindOut=" ,String userId";
+     userIdBindOut=",userId";
+ }
+ %>
+package <%=nameSpace %>.controller;
+
+import <%=ns_start %>.comutil.entity.ErrorReturn;
+import <%=ns_start %>.comutil.AuthComUtil;
+import <%=ns_start %>.comutil.RestReturn;
+import <%=ns_start %>.comutil.validate.ComValidateUtil;
+import <%=nameSpace %>.entity.<%=tableNameEntity%>Entity;
+import com.alibaba.fastjson.JSONObject;
+
+import <%=nameSpace %>.service.<%=tableNameEntity%>Service;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.BadSqlGrammarException;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.BeanUtils;
+import <%=nameSpace %>.entity.param.insert.Insert<%=tableNameEntity%>Param;
+import <%=nameSpace %>.entity.param.delete.Del<%=tableNameEntity%>Param;
+import <%=nameSpace %>.entity.param.update.Update<%=tableNameEntity%>Param;
+import <%=nameSpace %>.entity.param.entity.Select<%=tableNameEntity%>ModeParam;
+import <%=nameSpace %>.entity.param.list.Select<%=tableNameEntity%>ListParam;
+import <%=nameSpace %>.entity.rep_return.list.<%=tableNameEntity%>ListReturn;
+import <%=nameSpace %>.entity.rep_return.entity.<%=tableNameEntity%>ModeReturn;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.http.HttpStatus;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * @Author: 
+ * @Date: <%= DateTime.Now %>
+ * @Description: <%=tableDescribe %> 控制器
+ * @updater:
+ * @update date:
+ */
+@RestController
+@Api(description = "<%=tableDescribe %> 接口"<%=tableDescribe %>)
+@RequestMapping(value = "/<%=tableNameEntity %>" )
+public class <%=tableNameEntity%>Controller {
+    
+   Logger logger = LoggerFactory.getLogger(<%=tableNameEntity%>Controller.class);
+   @Autowired
+   <%=tableNameEntity%>Service <%= camelTableObj%>Service;
+    
+    
+  // @ApiOperation(value = " <%=tableDescribe %> 对象查询", notes = "", response = <%=tableNameEntity%>ModeReturn.class)
+   @RequestMapping(value = "/selectByPrimaryKey", method = {RequestMethod.POST})
+   public  RestReturn selectByPrimaryKey(@Validated @RequestBody Select<%=tableNameEntity%>ModeParam selectParam, BindingResult result, HttpServletRequest request, HttpServletResponse response){
+         RestReturn restReturn = new RestReturn();
+       AuthComUtil authComUtil = new AuthComUtil();
+		if (!authComUtil.checkLogin(request, response)) {
+			return restReturn.createUnauth();
+		}
+		restReturn=ComValidateUtil.validate(result);
+		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
+			return restReturn;
+		}
+      <%=tableNameEntity%>Entity retEntity = <%= camelTableObj%>Service.selectByPrimaryKey(selectParam.get<%=GetUpperCamel(primaryKeyName)%>());
+      logger.info("<%= tableDescribe %> Contrller  selectByPrimaryKey-------------------------- " +selectParam.get<%=GetUpperCamel(primaryKeyName)%>());
+      if (retEntity != null) {
+			restReturn.createSuccess();
+			restReturn.setData(retEntity);
+			return restReturn;
+		} else {
+			return restReturn.createBadRequest("未查询到相关消息！");
+		}
+   }
+  // @ApiOperation(value = " <%=tableDescribe %> 分页条件查询", notes = "", response = <%=tableNameEntity%>ListReturn.class)
+   @RequestMapping(value = "/listSelect", method = {RequestMethod.POST})
+   public RestReturn selectByExample(@Validated @RequestBody Select<%=tableNameEntity%>ListParam selectParam, BindingResult result, HttpServletRequest request, HttpServletResponse response){
+        RestReturn restReturn = new RestReturn();
+        AuthComUtil authComUtil = new AuthComUtil();
+		if (!authComUtil.checkLogin(request, response)) {
+			return restReturn.createUnauth();
+		}
+		restReturn=ComValidateUtil.validate(result);
+		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
+			return restReturn;
+		}
+    	com.github.pagehelper.PageInfo sPageinfo = <%= camelTableObj%>Service.selectByExample("selectParam key查询值，自定处理",selectParam);
+        logger.info("<%= tableDescribe%>  selectByExample--------------------------" + selectParam.getPageIndex());
+        restReturn=restReturn.setPageInfo(sPageinfo);
+		if (restReturn!=null) {
+			return restReturn;
+		}else {
+			return restReturn.createBadRequest("未查询到相关信息！");
+		}
+   }
+
+  <% if(SourceTable!=null){%>
+  // @ApiOperation(value = "<%=tableDescribe %> 保存方法", notes = "", response =RestReturn.class)
+   @RequestMapping(value = "/insert", method = {RequestMethod.POST})
+   public  RestReturn insert(@Validated @RequestBody Insert<%=tableNameEntity%>Param insertParam, BindingResult result, HttpServletRequest request, HttpServletResponse response){
+        RestReturn restReturn = new RestReturn();
+        AuthComUtil authComUtil = new AuthComUtil();
+		if (!authComUtil.checkLogin(request, response)) {
+			return restReturn.createUnauth();
+		}
+        
+		restReturn=ComValidateUtil.validate(result);
+		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
+			return restReturn;
+		}
+        <%=tableNameEntity%>Entity entity=new <%=tableNameEntity%>Entity();
+		BeanUtils.copyProperties(insertParam,entity);
+		ErrorReturn ret = <%= camelTableObj%>Service.insert(entity);
+		if (ret.getCode() == 1) {
+			return restReturn.createSuccess("保存成功！");
+
+		}else if (ret.getCode() == 0) {
+			return restReturn.createSuccess("保存失败！");
+
+		}else{
+			return restReturn.createBadRequest(ret.getCode(),ret.getMessage());
+		}
+   }
+   
+  // @ApiOperation(value = "<%=tableDescribe %> 删除", notes = "", response =RestReturn.class)
+   @RequestMapping(value = "/delete", method = {RequestMethod.POST})
+   public  RestReturn delete(@Validated @RequestBody Del<%=tableNameEntity%>Param delParam, BindingResult result, HttpServletRequest request, HttpServletResponse response){
+        RestReturn restReturn = new RestReturn();
+        AuthComUtil authComUtil = new AuthComUtil();
+		if (!authComUtil.checkLogin(request, response)) {
+			return restReturn.createUnauth();
+		}
+        
+		restReturn=ComValidateUtil.validate(result);
+		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
+			return restReturn;
+		}
+		ErrorReturn ret = <%= camelTableObj%>Service.updateStatusToDel(delParam.get<%=GetUpperCamel(primaryKeyName)%>());
+		if (ret.getCode() == 1) {
+			return restReturn.createSuccess("删除成功！");
+
+		}else if (ret.getCode() == 0) {
+			return restReturn.createSuccess("删除失败！");
+
+		}else{
+			return restReturn.createBadRequest(ret.getCode(),ret.getMessage());
+		}
+   }
+  
+    
+  // @ApiOperation(value = "<%=tableDescribe %> 查询条件修改", notes = "", response =RestReturn.class)
+   @RequestMapping(value = "/update", method = {RequestMethod.POST})
+   public  RestReturn update(@Validated @RequestBody Update<%=tableNameEntity%>Param updateParam, BindingResult result, HttpServletRequest request, HttpServletResponse response){
+        RestReturn restReturn = new RestReturn();
+        AuthComUtil authComUtil = new AuthComUtil();
+		if (!authComUtil.checkLogin(request, response)) {
+			return restReturn.createUnauth();
+		}
+		restReturn=ComValidateUtil.validate(result);
+		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
+			return restReturn;
+		}
+        <%=tableNameEntity%>Entity entity=new <%=tableNameEntity%>Entity();
+		BeanUtils.copyProperties(updateParam,entity);
+		ErrorReturn ret = <%= camelTableObj%>Service.updateByPrimaryKeySelective(entity);
+		if (ret.getCode() == 1) {
+			return restReturn.createSuccess("修改成功！");
+
+		}else if (ret.getCode() == 0) {
+			return restReturn.createSuccess("修改失败！");
+
+		}else{
+			return restReturn.createBadRequest(ret.getCode(),ret.getMessage());
+		}
+   }
+    <%} %>
+    
+}
+ 
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplateFilter.cst" -->
+<!-- #include file="../ScriptTemplate.cst" -->

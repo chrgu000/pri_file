@@ -1,0 +1,129 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Debug="False" ResponseEncoding="UTF-8" %>
+<%@ Property Name="SampleStringProperty" Default="SomeValue" Type="System.String" %>
+<%@ Property Name="SampleBooleanProperty" Default="True" Type="System.Boolean" %>
+
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="请选择你要生成的表，可以多选！" %>
+<%--FileOutputStream--%>
+
+<%@ Property Name="ns_start" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+
+<%@ Register Name="boot_control" Template="boot_control.cst"  MergeProperties="False" ExcludeProperties="" %> 
+
+<%@ Register Name="boot_dao_mapping" Template="boot_dao_mapping.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_dao" Template="boot_dao.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_services_impl" Template="boot_services_impl.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_services_interface" Template="boot_services_interface.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_swggier_del" Template="boot_swggier_del.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_entity_example" Template="boot_entity_example.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_entity_swggier" Template="boot_entity_swggier.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_swggier_insert" Template="boot_swggier_insert.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_swggier_update" Template="boot_swggier_update.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_swggier_getone" Template="boot_swggier_getone.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_swggier_getlist" Template="boot_swggier_getlist.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_swggier_getlist_return" Template="boot_swggier_getlist_return.cst"  MergeProperties="False" ExcludeProperties="" %>
+<%@ Register Name="boot_swggier_getone_return" Template="boot_swggier_getone_return.cst"  MergeProperties="False" ExcludeProperties="" %>
+
+<%@ Property Name="dropDownListStr" Type="System.String" Default="" Optional="false" Category="Strings" Description="dropDownList" %>
+<% %> 
+<script runat="template">
+  
+        
+        public void Generate()
+        { 
+            foreach(TableSchema table in this.SourceTables){
+                String fileName=GetUpperCamel(table.Name); 
+                
+                    CodeTemplate st=new boot_control();
+                    CreateTemplate(st,fileName+"Controller.java",table,false,"controller");
+                    st=new boot_dao_mapping();
+                    CreateTemplate(st,fileName+"Mapper.xml",table,true,"Mappers"); 
+                    st=new boot_dao();
+                    CreateTemplate(st,fileName+"Mapper.java",table,true,"dao");
+                   
+                    st=new boot_services_impl();
+                    CreateTemplate(st,fileName+"ServiceImpl.java",table,false,"service\\impl");
+                    st=new boot_services_interface();
+                    CreateTemplate(st,fileName+"Service.java",table,false,"service"); 
+                    st=new boot_swggier_del();
+                    CreateTemplate(st,"Del"+fileName+"Param.java",table,false,"entity\\param\\delete");
+                    st=new boot_entity_example();
+                    CreateTemplate(st,fileName+"Example.java",table,false,"entity");
+                    st=new boot_entity_swggier();
+                    CreateTemplate(st,fileName+"Entity.java",table,false,"entity");
+                    st=new boot_swggier_insert();
+                    CreateTemplate(st,"Insert"+fileName+"Param.java",table,false,"entity\\param\\insert");
+                    st=new boot_swggier_update();
+                    CreateTemplate(st,"Update"+fileName+"Param.java",table,false,"entity\\param\\update");
+                    st=new boot_swggier_getone();
+                    CreateTemplate(st,"Select"+fileName+"ModeParam.java",table,false,"entity\\param\\entity");
+                    st=new boot_swggier_getlist();
+                    CreateTemplate(st,"Select"+fileName+"ListParam.java",table,false,"entity\\param\\list");
+                    st=new boot_swggier_getlist_return();
+                    CreateTemplate(st,fileName+"ListReturn.java",table,false,"entity\\rep_return\\list");
+                    st=new boot_swggier_getone_return();
+                    CreateTemplate(st,fileName+"ModeReturn.java",table,false,"entity\\reP_return\\entity");
+                
+            }
+        } 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="temp"></param>
+        /// <param name="fileName"></param>  
+        /// <param name="table"></param>
+        /// <param name="isDDL">是否需要处理下拉框</param>
+        public void CreateTemplate(CodeTemplate temp,string fileName,TableSchema table,bool isDDL,string filePath)
+        {
+            //System.Diagnostics.Debugger.Launch();  
+            System.Diagnostics.Debugger.Break();
+                       CodeTemplate st =temp;
+            string outputFile1 = "";
+            if(isDDL){
+                st.SetProperty("dropDownListStr",dropDownListStr);
+            }
+        	st.SetProperty("SourceTable",table);
+        	st.SetProperty("nameSpace",nameSpace);
+            st.SetProperty("ns_start",ns_start);
+            String outFilePath="D:\\CodeCreate\\spring_boot\\0331\\"+filePath+"\\"+fileName;
+           
+            outputFile1 = string.Format(outFilePath);
+            st.RenderToFile(outputFile1,true);
+            
+            
+        }
+
+// My methods here.
+public string SampleMethod()
+{
+  return "Method output.";
+}
+</script>
+<!-- #include file="../ScriptTemplateFilter.cst" -->
+<!-- #include file="../ScriptTemplate.cst" -->
+
+ <%
+// [{"code":"tfProjectCode","name":"tfProjectName"},{"code":"tfBidSectionId","name":"tfBidSectionName"}]-->
+//System.Diagnostics.Debugger.Launch();  
+this.Generate(); 
+    foreach(TableSchema table in this.SourceTables){
+                String fileName=GetUpper(table.Name);
+                %><%= table.Name %> <%= table.Description%><%
+            
+            }
+
+%>  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

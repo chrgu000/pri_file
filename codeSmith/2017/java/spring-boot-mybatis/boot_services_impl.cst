@@ -1,0 +1,301 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" ResponseEncoding="UTF-8" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="System " %>
+<%@ Import Namespace="System" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="TableName" %>
+<%@ Property Name="SourceView" Type="SchemaExplorer.ViewSchema" Category="Context" Description="ViewName" Optional="True"  %>
+<%@ Property Name="ns_start" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%@ Property Name="nameSpace" Type="System.String" Default="" Optional="false" Category="Strings" Description="nameSpace" %>
+<%
+bool isPrint=false;
+ string primaryKeyName=""; 
+string primaryKeyType="";
+string primaryJdbcType="";
+string userAndTypeBindOut="";
+string userIdBindOut="";
+string tableNameSource="";
+string tableNameEntity="";
+string camelTableObj="";
+string tableDescribe="";
+if(SourceTable!=null){
+    tableNameSource=SourceTable.Name;
+    tableNameEntity=GetUpperCamel(SourceTable.Name);
+    tableDescribe=SourceTable.Description;
+    camelTableObj=GetAttributeCamel(SourceTable.Name);
+}else{
+     tableNameSource=SourceView.Name;
+    tableNameEntity=GetUpperCamel(SourceView.Name);
+    camelTableObj=GetAttributeCamel(SourceView.Name);
+}
+ foreach (ColumnSchema column in SourceTable.Columns) { if(column.IsPrimaryKeyMember) { primaryKeyName=column.Name; primaryKeyType = GetJavaTypeUpper(column.Name,column.DataType);primaryJdbcType=GetMysqltoMybatisTypeUpper(column.Name,column.DataType);   break; }}
+String showColumns="";
+String entityGet="";
+string pkAndType=" "+primaryKeyType+" "+primaryKeyName;
+ if(1==2)
+ { //输出 用户id绑定信息
+     userAndTypeBindOut=" ,String userId";
+     userIdBindOut=",userId";
+ }
+ %>
+package <%=nameSpace %>.service.impl;
+
+import <%=nameSpace %>.entity.<%=tableNameEntity%>Entity;
+import <%=nameSpace %>.entity.<%=tableNameEntity%>Example;
+import <%=ns_start %>.comutil.error_capture.MysqlCapture;
+import <%=ns_start %>.comutil.entity.ErrorReturn;
+import org.apache.ibatis.annotations.Param;
+import com.github.pagehelper.PageHelper;
+import <%=ns_start %>.comutil.*;
+import <%=nameSpace %>.dao.<%=tableNameEntity%>Mapper;
+import <%=nameSpace %>.service.<%=tableNameEntity%>Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;  
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * @Author: 系统生成
+ * @Date: <%= DateTime.Now %>
+ * @Description: <%=tableDescribe %> Service层接口
+ * @updater:
+ * @update date:
+ */
+@Service
+public class <%=tableNameEntity%>ServiceImpl implements <%=tableNameEntity%>Service {
+    
+   Logger logger = LoggerFactory.getLogger(<%=tableNameEntity%>ServiceImpl.class);
+   @Autowired
+   <%=tableNameEntity%>Mapper <%= camelTableObj%>Mapper;
+    /**
+     * 根据条件查询列表
+     * @param <%=primaryKeyName %> 主键查询
+     */
+   @Override
+   public  <%=tableNameEntity%>Entity selectByPrimaryKey(<%=pkAndType%>){
+      <%=tableNameEntity%>Entity retEntity =  <%= camelTableObj%>Mapper.selectByPrimaryKey(id);
+      logger.info("<%=tableDescribe %>  selectByPrimaryKey--------------------------" + retEntity);
+      return retEntity;
+   }
+    /**
+     * 根据条件查询列表
+     * @param key 查询key
+     * @param pageInfo 自定义的分页page参数
+     */
+   @Override
+   public com.github.pagehelper.PageInfo selectByExample(String key, PageInfo pageInfo){
+       	<%=tableNameEntity%>Example example=new <%=tableNameEntity%>Example();
+    	if(key!=null&&key.trim().length()>0){
+    		<%=tableNameEntity%>Example.Criteria criteria= example.createCriteria();
+            //TODO Criteria.andNameLike("%"+key+"%");  // 完成查询条件
+    	}
+    	example.setOrderByClause("create_time desc");
+    	PageHelper.startPage(pageInfo.getPageIndex(), pageInfo.getPageSize());
+    	List<<%=tableNameEntity%>Entity> list= <%= camelTableObj%>Mapper.selectByExample(example);
+    	com.github.pagehelper.PageInfo<<%=tableNameEntity%>Entity> sPageInfo = new com.github.pagehelper.PageInfo(list);
+        logger.info("<%= tableDescribe %>  selectByExample--------------------------" + sPageInfo);
+        return sPageInfo;
+   }
+
+  <% if(SourceTable!=null){%>
+   @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+   @Override
+   public  ErrorReturn insert(<%=tableNameEntity%>Entity record){
+        <%if(primaryKeyType=="String") {%>
+            record.set<%=GetUpperCamel(primaryKeyName) %>(UUID.randomUUID().toString());
+        <%}%>
+       int ret =-1;
+       try{
+           ret=<%= camelTableObj%>Mapper.insert(record);
+           logger.info("<%= tableDescribe %>  insert--------------------------" + ret);
+       }catch (DuplicateKeyException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (DataIntegrityViolationException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (Exception e){
+			return MysqlCapture.capture(e,logger);
+		}
+       if(ret!=1){
+          TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+       }
+       return new ErrorReturn(ret,"");
+   }
+    /**
+     * 批量添加
+     */
+   @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+   @Override
+   public  ErrorReturn inserts(List<<%=tableNameEntity%>Entity> list){
+        <%if(primaryKeyType=="String") {%>
+            for(<%=tableNameEntity%>Entity item :list){
+               item.set<%=GetUpperCamel(primaryKeyName) %>(UUID.randomUUID().toString());
+            }
+        <%}%>
+       int ret =-1;
+       try{
+           ret=<%= camelTableObj%>Mapper.inserts(list);
+           logger.info("<%= tableDescribe %>  inserts--------------------------" + ret);
+       }catch (DuplicateKeyException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (DataIntegrityViolationException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (Exception e){
+			return MysqlCapture.capture(e,logger);
+		}
+       if (ret >= 1) {
+    	  return  new ErrorReturn(1,"");
+       }
+       else{
+          TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+       }
+       return new ErrorReturn(ret,"");
+   }
+     /**
+     * 插入特定条件值
+     */
+   @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+   @Override
+   public  ErrorReturn insertSelective(<%=tableNameEntity%>Entity record){
+        <%if(primaryKeyType=="String") {%>
+            record.set<%=GetUpperCamel(primaryKeyName) %>(UUID.randomUUID().toString());
+        <%}%>
+        int ret =-1;
+       try{
+           ret=<%= camelTableObj%>Mapper.insertSelective(record);
+           logger.info("<%= tableDescribe %>  insertSelective--------------------------" + ret);
+        }catch (DuplicateKeyException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (DataIntegrityViolationException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (Exception e){
+			return MysqlCapture.capture(e,logger);
+		}
+       if(ret!=1){
+          TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+       }
+         return new ErrorReturn(ret,"");
+   }
+    
+    /**
+     * 删除
+     */
+   @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class) 
+   @Override
+   public  ErrorReturn deleteByPrimaryKey(<%=pkAndType%>){
+       int ret=-1;
+       try{
+           ret = <%= camelTableObj%>Mapper.deleteByPrimaryKey(<%=primaryKeyName%>);
+           logger.info("<%= tableDescribe %>  deleteByPrimaryKey--------------------------" + ret);
+       }catch (DuplicateKeyException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (DataIntegrityViolationException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (Exception e){
+			return MysqlCapture.capture(e,logger);
+		}
+       if(ret!=1){
+          TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+       }
+       return new ErrorReturn(ret,"");
+   }
+   /**
+     * 软删除
+     */
+   @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+   @Override
+   public   ErrorReturn updateStatusToDel(<%=pkAndType%>){
+       int ret=-1;
+       try{
+           ret = <%= camelTableObj%>Mapper.updateStatusToDel(<%=primaryKeyName%>);
+           logger.info("<%= tableDescribe %>  updateStatusToDel--------------------------" + ret);
+       }catch (DuplicateKeyException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (DataIntegrityViolationException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (Exception e){
+			return MysqlCapture.capture(e,logger);
+		}
+       if(ret!=1){
+          TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+       }
+       return new ErrorReturn(ret,"");
+   }
+   
+    
+    /**
+     * 根据主键按照条件更新
+     */
+   @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+   @Override
+   public  ErrorReturn updateByPrimaryKeySelective(<%=tableNameEntity%>Entity record){
+        int ret=-1;
+		try{
+		    ret = <%= camelTableObj%>Mapper.updateByPrimaryKeySelective(record);
+			logger.info("<%= tableDescribe %> updateByPrimaryKeySelective--------------------------" + ret);
+			if(ret!=1) {
+				TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			}
+		}catch (DuplicateKeyException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (DataIntegrityViolationException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (Exception e){
+			return MysqlCapture.capture(e,logger);
+		}
+		if(ret!=1){
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+		}
+		return new ErrorReturn(ret,"");
+   }
+
+    /**
+     * 根据主键全部信息更新
+     */
+   @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+   @Override
+   public  ErrorReturn updateByPrimaryKey(<%=tableNameEntity%>Entity record){
+              int ret=-1;
+		try{
+		    ret = <%= camelTableObj%>Mapper.updateByPrimaryKey(record);
+			logger.info("<%= tableDescribe %> updateByPrimaryKey--------------------------" + ret);
+			if(ret!=1) {
+				TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			}
+		}catch (DuplicateKeyException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (DataIntegrityViolationException e){
+			return MysqlCapture.capture(e,logger);
+		}catch (Exception e){
+			return MysqlCapture.capture(e,logger);
+		}
+		if(ret!=1){
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+		}
+		return new ErrorReturn(ret,"");
+   }
+    <%} %>
+    
+}
+
+<script runat="template">
+// My methods here.
+</script>
+<!-- #include file="../ScriptTemplateFilter.cst" -->
+<!-- #include file="../ScriptTemplate.cst" -->

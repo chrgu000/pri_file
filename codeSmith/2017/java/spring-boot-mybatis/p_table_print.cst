@@ -1,0 +1,48 @@
+﻿<%@ Template Language="C#" TargetLanguage="Text" Debug="False" ResponseEncoding="UTF-8" %>
+<%@ Property Name="SampleStringProperty" Default="SomeValue" Type="System.String" %>
+<%@ Property Name="SampleBooleanProperty" Default="True" Type="System.Boolean" %>
+
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="Context" Description="请选择你要生成的表，可以多选！" %>
+
+<% %> 
+<script runat="template">
+  
+        
+    
+
+// My methods here.
+public string SampleMethod()
+{
+  return "Method output.";
+}
+</script>
+<!-- #include file="../ScriptTemplate.cst" -->
+
+ <%
+// [{"code":"tfProjectCode","name":"tfProjectName"},{"code":"tfBidSectionId","name":"tfBidSectionName"}]-->
+//System.Diagnostics.Debugger.Launch();  
+
+    foreach(TableSchema table in this.SourceTables){
+                String fileName=GetUpper(table.Name);
+                %>
+                
+                <%= table.Name %> <%= table.Description%>
+                <%
+            
+            }
+
+%>  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
