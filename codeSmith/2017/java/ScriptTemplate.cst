@@ -718,7 +718,7 @@ public string getEntitySwggingStr(TableSchema SourceTable,bool isEnable,bool isA
         }
         if(javaType=="Date"){	
             nowStr=nowStr+enableStr+"@DateTimeFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")\r\n";
-            nowStr=nowStr+enableStr+"@JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\",timezone=\"GMT+8\")\r\n";  
+            nowStr=nowStr+enableStr+"@JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")\r\n";   
         }else       
         if(length>0){
             if(javaType=="String"){

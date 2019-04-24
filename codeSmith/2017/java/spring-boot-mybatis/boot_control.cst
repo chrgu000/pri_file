@@ -115,6 +115,7 @@ public class <%=tableNameEntity%>Controller {
 		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
 			return restReturn;
 		}
+         logger.info("insertBaseDatabase===="+param.toString());
       <%=tableNameEntity%>Entity retEntity = <%= camelTableObj%>Service.selectByPrimaryKey(selectParam.get<%=GetUpperCamel(primaryKeyName)%>());
       logger.info("<%= tableDescribe %> Contrller  selectByPrimaryKey-------------------------- " +selectParam.get<%=GetUpperCamel(primaryKeyName)%>());
       if (retEntity != null) {
@@ -137,14 +138,27 @@ public class <%=tableNameEntity%>Controller {
 		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
 			return restReturn;
 		}
+         logger.info("listSelect===="+param.toString());
     	com.github.pagehelper.PageInfo sPageinfo = <%= camelTableObj%>Service.selectByExample("selectParam key查询值，自定处理",selectParam);
         logger.info("<%= tableDescribe%>  selectByExample--------------------------" + selectParam.getPageIndex());
-        restReturn=restReturn.setPageInfo(sPageinfo);
-		if (restReturn!=null) {
+		List<DbSourceEntity> retList = sPageinfo.getList();
+		if (dbSourceEntityList.size() > 0) {
+			restReturn.setPageIndex(sPageinfo.getPageNum());
+			restReturn.setPageSize(sPageinfo.getPageSize());
+			restReturn.setTotal(sPageinfo.getTotal());
+			restReturn.setData(retList);
+			restReturn.createSuccess();
 			return restReturn;
-		}else {
+		} else if (retList !=null && retList.size() == 0) {
+			restReturn.createNullVal();
+			restReturn.setPageIndex(sPageinfo.getPageNum());
+			restReturn.setPageSize(sPageinfo.getPageSize());
+			restReturn.setTotal(sPageinfo.getTotal());
+			return restReturn;
+		} else {
 			return restReturn.createBadRequest("未查询到相关信息！");
 		}
+        
    }
 
   <% if(SourceTable!=null){%>
@@ -161,6 +175,7 @@ public class <%=tableNameEntity%>Controller {
 		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
 			return restReturn;
 		}
+         logger.info("insertBaseDatabase===="+param.toString());
         <%=tableNameEntity%>Entity entity=new <%=tableNameEntity%>Entity();
 		BeanUtils.copyProperties(insertParam,entity);
 		ErrorReturn ret = <%= camelTableObj%>Service.insert(entity);
@@ -188,6 +203,7 @@ public class <%=tableNameEntity%>Controller {
 		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
 			return restReturn;
 		}
+         logger.info("insertBaseDatabase===="+param.toString());
 		ErrorReturn ret = <%= camelTableObj%>Service.updateStatusToDel(delParam.get<%=GetUpperCamel(primaryKeyName)%>());
 		if (ret.getCode() == 1) {
 			return restReturn.createSuccess("删除成功！");
@@ -213,6 +229,7 @@ public class <%=tableNameEntity%>Controller {
 		if (restReturn.getStatus()!= HttpStatus.SC_OK) {
 			return restReturn;
 		}
+         logger.info("insertBaseDatabase===="+param.toString());
         <%=tableNameEntity%>Entity entity=new <%=tableNameEntity%>Entity();
 		BeanUtils.copyProperties(updateParam,entity);
 		ErrorReturn ret = <%= camelTableObj%>Service.updateByPrimaryKeySelective(entity);

@@ -60,6 +60,12 @@ public class <%=tableNameEntity %>Entity {
       public <%=tableNameEntity %>Entity(){}
       <%=getEntityConstructorStr(SourceTable,tableNameEntity) %>
 
+	@Override
+	public String toString() {
+		return "<%=tableNameEntity %>Entity{" +
+				"systemUserId='" + systemUserId + '\'' +
+				'}';
+	}
 }
 
 <script runat="template">
